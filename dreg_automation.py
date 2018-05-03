@@ -22,7 +22,7 @@ def wrk_file(folder_name: str, file_name: str, is_timestamp = False):
     spl = file_name.split(".")
     if len(spl) < 2:
         ext = ""
-    else ext = spl[-1]
+    else: ext = spl[-1]
 
     nm = file_name.split(".")[0]
 
@@ -49,7 +49,7 @@ def run_idis_clicker(dd: DregData, dreg_ids_with_action: list):
 
     ic = IdisClicker()
 
-    dreg_df = pd.read_excel('dreg_analysis.xlsx')
+    dreg_df = pd.read_excel(wrk_file(DATA_FOLDER, "dreg_analysis.xlsx"))
 
     dd = DregData(dreg_df)
 
@@ -75,43 +75,22 @@ def run_idis_clicker(dd: DregData, dreg_ids_with_action: list):
             restart_browser = True
             dreg_df = dd.get_dreg_data()
 
-            output_file_name = "last_clicker_result" + ".xlsx"
-            writer = pd.ExcelWriter(output_file_name + '.xlsx', engine='xlsxwriter')
+            output_file_name = wrk_file(DATA_FOLDER, "last_clicker_result.xlsx", is_timestamp = True)
+            writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
             dreg_df.to_excel(writer, index=False)
             writer.save()
 
 
-
-
     dreg_df = dd.get_dreg_data()
 
-    output_file_name = "clicker_result" + datetime.now().strftime('%Y-%m-%d %H_%M_%S') + ".xlsx"
-    writer = pd.ExcelWriter(output_file_name + '.xlsx', engine='xlsxwriter')
+    output_file_name = wrk_file(DATA_FOLDER, "clicker_result.xlsx", is_timestamp = True)
+    writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
     dreg_df.to_excel(writer, index=False)
     writer.save()
 
-def my_time_stamp():
-    return datetime.now().strftime('%Y-%m-%d %H_%M_%S')
-
-def my_file_name(folder_name: str, core_name: str, extention: str, is_timestamp = False):
-    if is_timestamp:
-        fname = core_name + my_time_stamp() + "." + extention
-    else:
-        fname = core_name + "." + extention
-
-    return os.path.join(folder_name, fname)
-
-    FOLDER = "datafiles"
-    SYNONIMS = "synonims"
-    EXPORTDREG = "exportdreg"
-    COREPRODUCT = "coreproduct"
-    LAST_CLICKER_RESULT = "last_clicker_result"
-    CLICKER_RESULT = "clicker_result"
-    DREG_ANALYSIS = "dreg_analysis"
+    return
 
 def main():
-
-    
 
 
     while True:
@@ -125,16 +104,16 @@ def main():
 
         if answer == '1':
 
-            synonims_df = pd.read_excel('synonims.xlsx')
-            dreg_df = pd.read_excel('exportdreg.xlsx')
+            synonims_df = pd.read_excel( wrk_file(DATA_FOLDER,'synonims.xlsx') )
+            dreg_df = pd.read_excel( wrk_file(DATA_FOLDER,'exportdreg.xlsx') )
 
             all_customer_names = DregData.customer_name_list_all(dreg_df)
             all_customers_status_new = DregData.customer_name_list_status_new(dreg_df)
 
             synonims_df = CustName.process(all_customer_names, all_customers_status_new,  synonims_df)
 
-            output_file_name = 'synonims_' + datetime.now().strftime('%Y-%m-%d %H_%M_%S')
-            writer = pd.ExcelWriter(output_file_name + '.xlsx', engine='xlsxwriter')
+            output_file_name = wrk_file(DATA_FOLDER,'synonims.xlsx', is_timestamp = True)
+            writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
             synonims_df.to_excel(writer, index=False)
             writer.save()
 
@@ -143,8 +122,8 @@ def main():
 
         elif answer == '2':
 
-            synonims_df = pd.read_excel('synonims.xlsx')
-            dreg_df = pd.read_excel('exportdreg.xlsx')
+            synonims_df = pd.read_excel( wrk_file(DATA_FOLDER,'synonims.xlsx') )
+            dreg_df = pd.read_excel( wrk_file(DATA_FOLDER,'exportdreg.xlsx') )
 
             q = count_synonim_file_questions(synonims_df)
             print('{} of ? in synonims'.format(q))
@@ -152,7 +131,7 @@ def main():
                 print("Open synonim_XXX.xlsx; fix question marks and save as synonim.xlsx")
                 continue
 
-            core_part_name_df = pd.read_excel("coreproduct.xlsx")
+            core_part_name_df = pd.read_excel( wrk_file(DATA_FOLDER,"coreproduct.xlsx") )
             core_part_name_df = core_part_name_df[['Type', 'Core Product']]
             core_part_name_dict = core_part_name_df.set_index('Type')['Core Product'].to_dict()
 
@@ -166,8 +145,8 @@ def main():
 
             dreg_df = dd.get_dreg_data()
 
-            output_file_name = "dreg_analysis_" + datetime.now().strftime('%Y-%m-%d %H_%M_%S') + ".xlsx"
-            writer = pd.ExcelWriter(output_file_name + '.xlsx', engine='xlsxwriter')
+            output_file_name =  wrk_file(DATA_FOLDER, "dreg_analysis.xlsx", is_timestamp=True)
+            writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
             dreg_df.to_excel(writer, index=False)
             writer.save()
 
@@ -177,13 +156,13 @@ def main():
 
         elif answer == "3":
 
-            dreg_df = pd.read_excel('dreg_analysis.xlsx')
+            dreg_df = pd.read_excel( wrk_file(DATA_FOLDER,'dreg_analysis.xlsx') )
             dd = DregData(dreg_df)
             dreg_ids_with_action = dd.id_list_action_not_empty()
             run_idis_clicker(dd, dreg_ids_with_action)
 
         elif answer == "4":
-            dreg_df = pd.read_excel('dreg_analysis.xlsx')
+            dreg_df = pd.read_excel( wrk_file(DATA_FOLDER,'dreg_analysis.xlsx') )
             dd = DregData(dreg_df)
             dreg_ids_with_action = dd.id_list_clicker_fail()
             run_idis_clicker(dd, dreg_ids_with_action)
