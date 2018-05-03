@@ -99,6 +99,7 @@ def main():
         print("2 - Process DREGs")
         print("3 - Run Clicker")
         print("4 - Run clicker for failed lines")
+        print("5 - Make ''look like'' file")
 
         answer = input("->")
 
@@ -166,7 +167,18 @@ def main():
             dd = DregData(dreg_df)
             dreg_ids_with_action = dd.id_list_clicker_fail()
             run_idis_clicker(dd, dreg_ids_with_action)
-        else:
+        
+        elif answer == "5":
+            print("Max difference between words in %  [0..100]?")
+            answer = input("->")
+
+            lookslike_df = pd.read_excel( wrk_file(DATA_FOLDER,'lookslike.xlsx') )
+            dreg_df = pd.read_excel( wrk_file(DATA_FOLDER,'exportdreg.xlsx') )
+
+            all_customer_names = DregData.customer_name_list_all(dreg_df)
+            all_customers_status_new = DregData.customer_name_list_status_new(dreg_df)
+
+
             break
 
 

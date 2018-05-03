@@ -88,6 +88,18 @@ class CustomerNameDistance:
         return res
 
     @classmethod
+    def find_lookslike_as_list(cls, orig_name: str, name_list: list, max_distance: float) -> list:
+
+        res = list()
+
+        for nm in name_list:
+            if nm != orig_name:
+                dist = cls.compare_cust_name(cls.clear_cust_name(nm), cls.clear_cust_name(orig_name))           
+                if dist < max_distance:
+                    res.append(nm)
+        return res
+
+    @classmethod
     def is_similar_names(cls, orig_name: str, name_list: list, max_distance: float = 0.4):
 
         if cls.find_similar_names(orig_name, name_list, max_distance):

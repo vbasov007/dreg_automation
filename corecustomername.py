@@ -66,6 +66,24 @@ class CoreCustomerNameSolver:
             output_df = output_df.append(pd.Series(row, index=headers[:len(row)]), ignore_index=True)
 
         return output_df
+    
+    @staticmethod
+    def process_lookslike(all_customer_names: list, new_names: list, lookslike_database_df: pd.DataFrame, max_dist: float):
+
+        lookslike_db_as_list_of_rows = lookslike_database_df.values.tolist()
+
+        # add new lines of similar lookslike words
+        for name in new_names:
+            ll_list = CusNam.find_lookslike_as_list(name, all_customer_names, max_dist)
+            ll_list = ["?" + w for w in ll_list]
+            lookslike_db_as_list_of_rows.append( [name] + ll_list )        
+
+        #process duplicates
+
+        #TODO: for row in lookslike_db_as_list_of_rows:
+
+
+        return
 
     @staticmethod
     def get_dict(data_df):
