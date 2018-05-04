@@ -81,47 +81,49 @@ class CoreCustomerNameSolver:
         #convert to sets
         
         work_db = list()
-        r = dict()
         for row in  lookslike_db_as_list_of_rows:
-            r["ok"] = {w for w in row if w[0] != '~' and w[0] != '?'}
-            r["~"] = {w[1:] for w in row if w[0] == '~'}
-            r["?"] = {w[1:] for w in row if w[0] == '?'}
-            print(r)
-            work_db.append(dict(r))
-            
+            row = [w for w in row if isinstance(w, str)]
+            r=list()
+            r.append({w for w in row if w[0] != '~' and w[0] != '?'}) #r[0] = "ok"
+            r.append({w[1:] for w in row if w[0] == '~'}) #r[1] = rejected
+            r.append({w[1:] for w in row if w[0] == '?'}) #r[2] = question
+            work_db.append(list(r))
 
+            
         for row in work_db:
-            for name in row["ok"]:
-                row["?"].update( CusNam.find_lookslike_as_list(name, all_customer_names, max_dist) )
-            row["?"] = row["?"]  - row["ok"] - row["~"]
+            for name in row[0]:
+                row[2].update( CusNam.find_lookslike_as_list(name, all_customer_names, max_dist) )
+            row[2] = row[2]  - row[0] - row[1]
+
         
         for i, row_i in enumerate(work_db):
             for j, row_j in enumerate(work_db):
-                if (row_j["ok"] & row_i["ok"]) and i != j:
-                    row_i["ok"].update(row_j["ok"])
-                    row_i["~"].update(row_j["~"])
-                    row_i["?"].update(row_j["?"])
+                if (row_j[0] & row_i[0]) and i != j:
+                    row_i[0].update(row_j[0])
+                    row_i[1].update(row_j[1])
+                    row_i[2].update(row_j[2])
                     del work_db[j]
+
         #assemble
         lookslike_db_as_list_of_rows = list()
 
         for row in work_db:       
             
-            ok = list(row["ok"])
+            ok = list(row[0])
             ok.sort()
-            no = list(row["~"])
+            no = list(row[1])
             no.sort()
             no = ["~" + w for w in no]
            
-            q = list(row["?"])
+            q = list(row[2])
             q.sort()
             q = ["?" + w for w in q]
 
             error = ""
-            if (row["ok"] & row["?"]) or (row["ok"] & row["~"]) or (row["~"] & row["?"]):
+            if (row[0] & row[2]) or (row[0] & row[1]) or (row[1] & row[2]):
                 error = "????"
 
-        lookslike_db_as_list_of_rows.append(ok + no + q + [error])
+            lookslike_db_as_list_of_rows.append(list(ok + no + q + [error]))
 
         max_row_word_count = max(len(r) for r in lookslike_db_as_list_of_rows)
 
