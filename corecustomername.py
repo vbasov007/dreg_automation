@@ -78,12 +78,61 @@ class CoreCustomerNameSolver:
             ll_list = ["?" + w for w in ll_list]
             lookslike_db_as_list_of_rows.append( [name] + ll_list )        
 
-        #process duplicates
+        #convert to sets
+        
+        work_db = list()
+        r = dict()
+        for row in  lookslike_db_as_list_of_rows:
+            r["ok"] = {w for w in row if w[0] != '~' and w[0] != '?'}
+            r["~"] = {w[1:] for w in row if w[0] == '~'}
+            r["?"] = {w[1:] for w in row if w[0] == '?'}
+            print(r)
+            work_db.append(dict(r))
+            
 
-        #TODO: for row in lookslike_db_as_list_of_rows:
+        for row in work_db:
+            for name in row["ok"]:
+                row["?"].update( CusNam.find_lookslike_as_list(name, all_customer_names, max_dist) )
+            row["?"] = row["?"]  - row["ok"] - row["~"]
+        
+        for i, row_i in enumerate(work_db):
+            for j, row_j in enumerate(work_db):
+                if (row_j["ok"] & row_i["ok"]) and i != j:
+                    row_i["ok"].update(row_j["ok"])
+                    row_i["~"].update(row_j["~"])
+                    row_i["?"].update(row_j["?"])
+                    del work_db[j]
+        #assemble
+        lookslike_db_as_list_of_rows = list()
 
+        for row in work_db:       
+            
+            ok = list(row["ok"])
+            ok.sort()
+            no = list(row["~"])
+            no.sort()
+            no = ["~" + w for w in no]
+           
+            q = list(row["?"])
+            q.sort()
+            q = ["?" + w for w in q]
 
-        return
+            error = ""
+            if (row["ok"] & row["?"]) or (row["ok"] & row["~"]) or (row["~"] & row["?"]):
+                error = "????"
+
+        lookslike_db_as_list_of_rows.append(ok + no + q + [error])
+
+        max_row_word_count = max(len(r) for r in lookslike_db_as_list_of_rows)
+
+        headers = ['Core Name'] + ['name' + str(i) for i in range(max_row_word_count - 1)]
+
+        output_df = pd.DataFrame(columns=headers)
+
+        for row in lookslike_db_as_list_of_rows:
+            output_df = output_df.append(pd.Series(row, index=headers[:len(row)]), ignore_index=True)
+
+        return output_df
 
     @staticmethod
     def get_dict(data_df):

@@ -178,6 +178,14 @@ def main():
             all_customer_names = DregData.customer_name_list_all(dreg_df)
             all_customers_status_new = DregData.customer_name_list_status_new(dreg_df)
 
+            lookslike_df = CustName.process_lookslike(all_customer_names, all_customers_status_new,  lookslike_df, float(answer)/100 )
+
+            output_file_name = wrk_file(DATA_FOLDER,'lookslike.xlsx', is_timestamp = True)
+            writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
+            lookslike_df.to_excel(writer, index=False)
+            writer.save()
+
+            print("Open lookslike_XXX.xlsx; fix question marks and save as lookslike.xlsx")
 
             break
 

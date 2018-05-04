@@ -13,7 +13,7 @@ class CustomerNameDistance:
 
         r = r.upper()
 
-        r = re.sub(r"[~!?*@#$./']", ' ', r)
+        r = re.sub(r"[~!?*@#$./-']", ' ', r)
 
         r = re.sub(r"[,-]", ' ', r)
 
