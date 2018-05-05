@@ -93,22 +93,43 @@ class CoreCustomerNameSolver:
         for row in work_db:
             for name in row[0]:
                 row[2].update( CusNam.find_lookslike_as_list(name, all_customer_names, max_dist) )
-            row[2] = row[2]  - row[0] - row[1]
+            #row[2] = row[2]  - row[0] - row[1]
 
         
-        for i, row_i in enumerate(work_db):
-            for j, row_j in enumerate(work_db):
-                if (row_j[0] & row_i[0]) and i != j:
-                    row_i[0].update(row_j[0])
-                    row_i[1].update(row_j[1])
-                    row_i[2].update(row_j[2])
-                    del work_db[j]
+        row_index_for_deletion = list()
+        while(True):
+            row_index_for_deletion = []    
+            num_of_rows = len(work_db)    
+            for i in range(num_of_rows-1):
+                if i not in row_index_for_deletion:
+                    row_i = work_db[i]
+                    for j in range(i + 1, num_of_rows):
+                        row_j = work_db[j]
+                        if j not in row_index_for_deletion:
+                            if (row_j[0] & row_i[0]):
+                                row_i[0].update(row_j[0])
+                                row_i[1].update(row_j[1])
+                                row_i[2].update(row_j[2])
+                                row_index_for_deletion.append(j)
+                    if row_index_for_deletion:
+                        work_db[i] = row_i
+
+            if row_index_for_deletion:
+                for i in row_index_for_deletion:
+                    work_db[i] = None
+                work_db = [w for w in work_db if w]
+
+            else:
+                break
+
 
         #assemble
         lookslike_db_as_list_of_rows = list()
 
         for row in work_db:       
-            
+
+            row[2] = row[2]  - row[0] - row[1]
+
             ok = list(row[0])
             ok.sort()
             no = list(row[1])
