@@ -1,28 +1,32 @@
 import pandas as pd
 import os
-from corecustomername import CoreCustomerNameSolver as CustName
+import corecustomername as ccm
+
 from dregdata import DregData
 from datetime import datetime
 from dregsolver import DregSolver
 from idisclicker import IdisClicker
 
 DATA_FOLDER = "datafiles"
-SYNONIMS = "synonims"
+synonymS = "synonyms"
 EXPORTDREG = "exportdreg"
 COREPRODUCT = "coreproduct"
 LAST_CLICKER_RESULT = "last_clicker_result"
 CLICKER_RESULT = "clicker_result"
 DREG_ANALYSIS = "dreg_analysis"
 
+
 def my_time_stamp():
     return datetime.now().strftime('%Y-%m-%d %H_%M_%S')
+
 
 def wrk_file(folder_name: str, file_name: str, is_timestamp = False):
 
     spl = file_name.split(".")
     if len(spl) < 2:
         ext = ""
-    else: ext = spl[-1]
+    else:
+        ext = spl[-1]
 
     nm = file_name.split(".")[0]
 
@@ -34,8 +38,8 @@ def wrk_file(folder_name: str, file_name: str, is_timestamp = False):
     return os.path.join(folder_name, fname)
 
 
-def count_synonim_file_questions(synonims_df):
-    s_list_of_lists = synonims_df.values.tolist()
+def count_synonym_file_questions(synonyms_df):
+    s_list_of_lists = synonyms_df.values.tolist()
 
     questions_count = 0
 
@@ -90,55 +94,56 @@ def run_idis_clicker(dd: DregData, dreg_ids_with_action: list):
 
     return
 
-def main():
 
+def main():
 
     while True:
 
-        print("1 - Make synonim file")
+        print("1 - Make synonym file")
         print("2 - Process DREGs")
         print("3 - Run Clicker")
         print("4 - Run clicker for failed lines")
         print("5 - Make ''look like'' file")
+        print("6 - Make synonym file from alias file and lookslike file")
 
         answer = input("->")
 
         if answer == '1':
 
-            synonims_df = pd.read_excel( wrk_file(DATA_FOLDER,'synonims.xlsx') )
-            dreg_df = pd.read_excel( wrk_file(DATA_FOLDER,'exportdreg.xlsx') )
+            synonyms_df = pd.read_excel( wrk_file(DATA_FOLDER, 'synonyms.xlsx') )
+            dreg_df = pd.read_excel( wrk_file(DATA_FOLDER, 'exportdreg.xlsx') )
 
             all_customer_names = DregData.customer_name_list_all(dreg_df)
             all_customers_status_new = DregData.customer_name_list_status_new(dreg_df)
 
-            synonims_df = CustName.process(all_customer_names, all_customers_status_new,  synonims_df)
+            synonyms_df = ccm.process(all_customer_names, all_customers_status_new,  synonyms_df)
 
-            output_file_name = wrk_file(DATA_FOLDER,'synonims.xlsx', is_timestamp = True)
+            output_file_name = wrk_file(DATA_FOLDER, 'synonyms.xlsx', is_timestamp = True)
             writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
-            synonims_df.to_excel(writer, index=False)
+            synonyms_df.to_excel(writer, index=False)
             writer.save()
 
-            print('{} of ? in synonims'.format(count_synonim_file_questions(synonims_df)))
-            print("Open synonim_XXX.xlsx; fix question marks and save as synonim.xlsx")
+            print('{} of ? in synonyms'.format(count_synonym_file_questions(synonyms_df)))
+            print("Open synonym_XXX.xlsx; fix question marks and save as synonym.xlsx")
 
         elif answer == '2':
 
-            synonims_df = pd.read_excel( wrk_file(DATA_FOLDER,'synonims.xlsx') )
+            synonyms_df = pd.read_excel( wrk_file(DATA_FOLDER,'synonyms.xlsx') )
             dreg_df = pd.read_excel( wrk_file(DATA_FOLDER,'exportdreg.xlsx') )
 
-            q = count_synonim_file_questions(synonims_df)
-            print('{} of ? in synonims'.format(q))
+            q = count_synonym_file_questions(synonyms_df)
+            print('{} of ? in synonyms'.format(q))
             if q > 0:
-                print("Open synonim_XXX.xlsx; fix question marks and save as synonim.xlsx")
+                print("Open synonym_XXX.xlsx; fix question marks and save as synonym.xlsx")
                 continue
 
-            core_part_name_df = pd.read_excel( wrk_file(DATA_FOLDER,"coreproduct.xlsx") )
+            core_part_name_df = pd.read_excel( wrk_file(DATA_FOLDER, "coreproduct.xlsx") )
             core_part_name_df = core_part_name_df[['Type', 'Core Product']]
             core_part_name_dict = core_part_name_df.set_index('Type')['Core Product'].to_dict()
 
-            synonims_dict = CustName.get_dict(synonims_df)
+            synonyms_dict = ccm.get_dict(synonyms_df)
 
-            dd = DregData(dreg_df, synonims_dict, core_part_name_dict)
+            dd = DregData(dreg_df, synonyms_dict, core_part_name_dict)
 
             solver = DregSolver()
 
@@ -146,7 +151,7 @@ def main():
 
             dreg_df = dd.get_dreg_data()
 
-            output_file_name =  wrk_file(DATA_FOLDER, "dreg_analysis.xlsx", is_timestamp=True)
+            output_file_name = wrk_file(DATA_FOLDER, "dreg_analysis.xlsx", is_timestamp=True)
             writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
             dreg_df.to_excel(writer, index=False)
             writer.save()
@@ -172,15 +177,20 @@ def main():
             print("Max difference between words in %  [0..100]?")
             answer = input("->")
 
-            lookslike_df = pd.read_excel( wrk_file(DATA_FOLDER,'lookslike.xlsx') )
-            dreg_df = pd.read_excel( wrk_file(DATA_FOLDER,'exportdreg.xlsx') )
+            lookslike_df = pd.read_excel(wrk_file(DATA_FOLDER, 'lookslike.xlsx'))
+            alias_df = pd.read_excel(wrk_file(DATA_FOLDER, 'alias.xlsx'))
+            dreg_df = pd.read_excel(wrk_file(DATA_FOLDER, 'exportdreg.xlsx'))
 
             all_customer_names = DregData.customer_name_list_all(dreg_df)
             all_customers_status_new = DregData.customer_name_list_status_new(dreg_df)
 
-            lookslike_df = CustName.process_lookslike(all_customer_names, all_customers_status_new,  lookslike_df, float(answer)/100 )
+            lookslike_df = ccm.process_lookslike(lookslike_df,
+                                                 all_customer_names,
+                                                 all_customers_status_new,
+                                                 float(answer)/100,
+                                                 alias_df)
 
-            output_file_name = wrk_file(DATA_FOLDER,'lookslike.xlsx', is_timestamp = True)
+            output_file_name = wrk_file(DATA_FOLDER, 'lookslike.xlsx', is_timestamp = True)
             writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
             lookslike_df.to_excel(writer, index=False)
             writer.save()
@@ -188,6 +198,23 @@ def main():
             print("Open lookslike_XXX.xlsx; fix question marks and save as lookslike.xlsx")
 
             break
+
+        elif answer == "6":
+
+            lookslike_df = pd.read_excel(wrk_file(DATA_FOLDER, 'lookslike.xlsx'))
+            alias_df = pd.read_excel(wrk_file(DATA_FOLDER, 'alias.xlsx'))
+
+            #try:
+            synonyms_df = ccm.process_alias(lookslike_df, alias_df)
+            #except Exception as e:
+            #    print(e)
+
+            output_file_name = wrk_file(DATA_FOLDER, 'synonyms.xlsx', is_timestamp=True)
+            writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
+            synonyms_df.to_excel(writer, index=False)
+            writer.save()
+
+            print("Check latest synonym_XXX")
 
 
 if __name__ == "__main__":
