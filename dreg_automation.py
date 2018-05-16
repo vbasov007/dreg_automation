@@ -84,7 +84,6 @@ def run_idis_clicker(dd: DregData, dreg_ids_with_action: list):
             dreg_df.to_excel(writer, index=False)
             writer.save()
 
-
     dreg_df = dd.get_dreg_data()
 
     output_file_name = wrk_file(DATA_FOLDER, "clicker_result.xlsx", is_timestamp = True)
@@ -99,34 +98,59 @@ def main():
 
     while True:
 
-        print("1 - Make synonym file")
-        print("2 - Process DREGs")
+        print("1 - Make ''look like'' file")
+        print("2 - Make synonym file from alias file and lookslike file")
+        print("3 - Process DREGs")
         print("3 - Run Clicker")
         print("4 - Run clicker for failed lines")
-        print("5 - Make ''look like'' file")
-        print("6 - Make synonym file from alias file and lookslike file")
 
         answer = input("->")
 
         if answer == '1':
 
-            synonyms_df = pd.read_excel( wrk_file(DATA_FOLDER, 'synonyms.xlsx') )
-            dreg_df = pd.read_excel( wrk_file(DATA_FOLDER, 'exportdreg.xlsx') )
+            print("Max difference between words in %  [0..100]?")
+            answer = input("->")
+
+            lookslike_df = pd.read_excel(wrk_file(DATA_FOLDER, 'lookslike.xlsx'))
+            alias_df = pd.read_excel(wrk_file(DATA_FOLDER, 'alias.xlsx'))
+            dreg_df = pd.read_excel(wrk_file(DATA_FOLDER, 'exportdreg.xlsx'))
 
             all_customer_names = DregData.customer_name_list_all(dreg_df)
             all_customers_status_new = DregData.customer_name_list_status_new(dreg_df)
 
-            synonyms_df = ccm.process(all_customer_names, all_customers_status_new,  synonyms_df)
+            lookslike_df = ccm.process_lookslike(lookslike_df,
+                                                 all_customer_names,
+                                                 all_customers_status_new,
+                                                 float(answer) / 100,
+                                                 alias_df)
 
-            output_file_name = wrk_file(DATA_FOLDER, 'synonyms.xlsx', is_timestamp = True)
+            output_file_name = wrk_file(DATA_FOLDER, 'lookslike.xlsx', is_timestamp=True)
+            writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
+            lookslike_df.to_excel(writer, index=False)
+            writer.save()
+
+            print("Open lookslike_XXX.xlsx; fix question marks and save as lookslike.xlsx")
+
+        elif answer == "2":
+
+            lookslike_df = pd.read_excel(wrk_file(DATA_FOLDER, 'lookslike.xlsx'))
+            alias_df = pd.read_excel(wrk_file(DATA_FOLDER, 'alias.xlsx'))
+
+            #try:
+            synonyms_df = ccm.process_alias(lookslike_df, alias_df)
+            #except Exception as e:
+            #    print(e)
+
+            output_file_name = wrk_file(DATA_FOLDER, 'synonyms.xlsx', is_timestamp=True)
             writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
             synonyms_df.to_excel(writer, index=False)
             writer.save()
 
-            print('{} of ? in synonyms'.format(count_synonym_file_questions(synonyms_df)))
-            print("Open synonym_XXX.xlsx; fix question marks and save as synonym.xlsx")
+            print("Check latest synonym_XXX")
 
-        elif answer == '2':
+            break
+
+        elif answer == '3':
 
             synonyms_df = pd.read_excel( wrk_file(DATA_FOLDER,'synonyms.xlsx') )
             dreg_df = pd.read_excel( wrk_file(DATA_FOLDER,'exportdreg.xlsx') )
@@ -160,63 +184,19 @@ def main():
 
             print(solver.get_statistics())
 
-        elif answer == "3":
+        elif answer == "4":
 
             dreg_df = pd.read_excel( wrk_file(DATA_FOLDER,'dreg_analysis.xlsx') )
             dd = DregData(dreg_df)
             dreg_ids_with_action = dd.id_list_action_not_empty()
             run_idis_clicker(dd, dreg_ids_with_action)
 
-        elif answer == "4":
+        elif answer == "5":
             dreg_df = pd.read_excel( wrk_file(DATA_FOLDER,'dreg_analysis.xlsx') )
             dd = DregData(dreg_df)
             dreg_ids_with_action = dd.id_list_clicker_fail()
             run_idis_clicker(dd, dreg_ids_with_action)
         
-        elif answer == "5":
-            print("Max difference between words in %  [0..100]?")
-            answer = input("->")
-
-            lookslike_df = pd.read_excel(wrk_file(DATA_FOLDER, 'lookslike.xlsx'))
-            alias_df = pd.read_excel(wrk_file(DATA_FOLDER, 'alias.xlsx'))
-            dreg_df = pd.read_excel(wrk_file(DATA_FOLDER, 'exportdreg.xlsx'))
-
-            all_customer_names = DregData.customer_name_list_all(dreg_df)
-            all_customers_status_new = DregData.customer_name_list_status_new(dreg_df)
-
-            lookslike_df = ccm.process_lookslike(lookslike_df,
-                                                 all_customer_names,
-                                                 all_customers_status_new,
-                                                 float(answer)/100,
-                                                 alias_df)
-
-            output_file_name = wrk_file(DATA_FOLDER, 'lookslike.xlsx', is_timestamp = True)
-            writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
-            lookslike_df.to_excel(writer, index=False)
-            writer.save()
-
-            print("Open lookslike_XXX.xlsx; fix question marks and save as lookslike.xlsx")
-
-            break
-
-        elif answer == "6":
-
-            lookslike_df = pd.read_excel(wrk_file(DATA_FOLDER, 'lookslike.xlsx'))
-            alias_df = pd.read_excel(wrk_file(DATA_FOLDER, 'alias.xlsx'))
-
-            #try:
-            synonyms_df = ccm.process_alias(lookslike_df, alias_df)
-            #except Exception as e:
-            #    print(e)
-
-            output_file_name = wrk_file(DATA_FOLDER, 'synonyms.xlsx', is_timestamp=True)
-            writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
-            synonyms_df.to_excel(writer, index=False)
-            writer.save()
-
-            print("Check latest synonym_XXX")
-
-            break
 
 if __name__ == "__main__":
     main()

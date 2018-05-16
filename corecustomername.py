@@ -1,8 +1,5 @@
 import pandas as pd
-from customernamedistance import CustomerNameDistance as CusNam
-from miscfuncs import remove_duplicates
-
-
+import customernamedistance as cnd
 
 
 def get_dict(data_df):
@@ -21,27 +18,35 @@ def get_dict(data_df):
 
 def assemble_df(input_list_of_rows: list):
 
+    checked_names = set()
+    for row in input_list_of_rows:
+        checked_names.update(row[0])
+
     assemble_list = list()
+    q_count = 0
     for row in input_list_of_rows:
 
-        row[2] = row[2] - row[0] - row[1]
+        row[2] = row[2] - row[0] - row[1] - checked_names
+
         if row[0] & row[1]:
-            raise Exception('assemble_df: Conflicts in the row:{0}'.format(' '.join(row[0][:3])))
+            raise Exception('assemble_df: Conflicts in the row:{0}'.format(' '.join(row[0])))
 
         ok = list(row[0])
-        ok.sort()
+        ok.sort(key=lambda w: cnd.clear_cust_name(w))
 
         no = list(row[1])
-        no.sort()
+        no.sort(key=lambda w: cnd.clear_cust_name(w))
         no = ["~" + w for w in no]
 
         q = list(row[2])
-        q.sort()
+        #q.sort(key=lambda w: cnd.clear_cust_name(w))
         q = ["?" + w for w in q]
 
-        assemble_list.append(list(ok + no + q))
+        q_count = q_count + len(q)
 
-        assemble_list.sort(key=lambda w: w[0])
+        assemble_list.append(list(ok + q + no))
+
+        assemble_list.sort(key=lambda w: cnd.clear_cust_name(w[0]))
 
     max_row_word_count = max(len(r) for r in assemble_list)
 
@@ -51,6 +56,8 @@ def assemble_df(input_list_of_rows: list):
 
     for row in assemble_list:
         output_df = output_df.append(pd.Series(row, index=headers[:len(row)]), ignore_index=True)
+
+    print(q_count)
 
     return output_df
 
@@ -82,15 +89,15 @@ def process_alias(lookslike_database_df: pd.DataFrame, alias_df: pd.DataFrame):
         for i, lookslike_row in enumerate(lookslike_data):
             if alias_row[0] & lookslike_row[0]:
                 r0.update(lookslike_row[0])
-                r1.update(lookslike_row[1])
-                r2.update(lookslike_row[2])
+                #r1.update(lookslike_row[1])
+                #r2.update(lookslike_row[2])
                 lookslike_data[i][0] = set()  # Mark line for deletion
 
-        output.append([r0, r1, r2])
+        output.append([r0, set(), set()])
 
     for row in lookslike_data:
         if row[0]:
-            output.append([row[0], row[1], row[2]]) # add not modified lines from lookslike
+            output.append([row[0], set(), set()]) # add not modified lines from lookslike
 
     output_df = assemble_df(output)
 
@@ -130,7 +137,7 @@ def process_lookslike(
 
     for row in work_db:
         for name in row[0]:
-            row[2].update(CusNam.find_lookslike_as_list(name, all_customer_names, max_dist) )
+            row[2].update(cnd.find_lookslike_as_list(name, all_customer_names, max_dist))
 
     while True:
         row_index_for_deletion = []
@@ -162,103 +169,7 @@ def process_lookslike(
             work_db = [w for w in work_db if w[0]]
             break
 
-    #assemble
-    lookslike_db_as_list_of_rows = list()
-    for row in work_db:
-
-        row[2] = row[2] - row[0] - row[1]
-
-        ok = list(row[0])
-        ok.sort()
-
-        no = list(row[1])
-        no.sort()
-        no = ["~" + w for w in no]
-
-        q = list(row[2])
-        q.sort()
-        q = ["?" + w for w in q]
-
-        error = ""
-        if (row[0] & row[2]) or (row[0] & row[1]) or (row[1] & row[2]):
-            error = "????"
-
-        lookslike_db_as_list_of_rows.append(list(ok + no + q + [error]))
-
-    lookslike_db_as_list_of_rows.sort(key=lambda w: w[0])
-
-
-
-    max_row_word_count = max(len(r) for r in lookslike_db_as_list_of_rows)
-
-    headers = ['Core Name'] + ['name' + str(i) for i in range(max_row_word_count - 1)]
-
-    output_df = pd.DataFrame(columns=headers)
-
-    for row in lookslike_db_as_list_of_rows:
-        output_df = output_df.append(pd.Series(row, index=headers[:len(row)]), ignore_index=True)
-
-    return output_df
-
-
-def process(all_customer_names: list, new_names: list, synonym_database_df):
-
-    synonyms_and_anti_synonyms_from_file_in_lists = synonym_database_df.values.tolist()
-
-    for name in new_names:
-        synonyms_and_anti_synonyms_from_file_in_lists.append([name])
-
-    already_processed_words = set()
-
-    updated_synonym_list = []
-
-    for row in synonyms_and_anti_synonyms_from_file_in_lists:
-
-        row = [w for w in row if isinstance(w, str)]
-
-        print("\r", row)
-
-        synonyms = [w for w in row if w[0] != '~' and w[0] != '?']
-
-        # skip row if already processed before
-        if set(synonyms).intersection(already_processed_words):
-            continue
-
-        anti_synonyms = [w[1:] for w in row if w[0] == '~']
-        words_with_questionmark = [w[1:] for w in row if w[0] == '?']
-
-        similar_words_with_distances = CusNam.find_similar_names_lst(synonyms, all_customer_names, 0.5)
-
-        new_similar_words = [w[0] for w in similar_words_with_distances]
-
-        new_similar_words = [w for w in new_similar_words if w not in anti_synonyms]
-
-        new_similar_words = [w for w in new_similar_words if w not in synonyms]
-
-        new_similar_words = [w for w in new_similar_words if w not in words_with_questionmark]
-
-        words_with_questionmark = words_with_questionmark + new_similar_words
-
-        words_with_questionmark.sort()
-
-        synonyms = remove_duplicates(synonyms)
-        anti_synonyms = remove_duplicates(anti_synonyms)
-        words_with_questionmark = remove_duplicates(words_with_questionmark)
-
-        result_row = synonyms + ["~" + w for w in anti_synonyms] + ["?" + w for w in words_with_questionmark]
-
-        updated_synonym_list.append(result_row)
-
-        already_processed_words.update(set(synonyms))
-
-    max_row_word_count = max(len(r) for r in updated_synonym_list)
-
-    headers = ['Core Name'] + ['name' + str(i) for i in range(max_row_word_count - 1)]
-
-    output_df = pd.DataFrame(columns=headers)
-
-    for row in updated_synonym_list:
-        output_df = output_df.append(pd.Series(row, index=headers[:len(row)]), ignore_index=True)
+    output_df = assemble_df(work_db)
 
     return output_df
 
