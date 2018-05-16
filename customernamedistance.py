@@ -37,6 +37,10 @@ class CustomerNameDistance:
 
         r = re.sub(r"\bNPP\b", '', r)
 
+        r = re.sub(r"\bNPF\b", '', r)
+
+        r = re.sub(r"\bNPK\b", '', r)
+
         # remove double and more spaces
         r = re.sub(r" {2,}", ' ', r)
 

@@ -216,6 +216,7 @@ def main():
 
             print("Check latest synonym_XXX")
 
+            break
 
 if __name__ == "__main__":
     main()
