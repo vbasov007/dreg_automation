@@ -120,8 +120,9 @@ def process_lookslike(
 
     if alias_df is not None:
         alias_db_as_list_of_rows = alias_df.values.tolist()
-        for name in alias_db_as_list_of_rows:
-            lookslike_db_as_list_of_rows.append([name])
+        for row in alias_db_as_list_of_rows:
+            for name in row:
+                lookslike_db_as_list_of_rows.append([name])
 
 
     # convert to sets
