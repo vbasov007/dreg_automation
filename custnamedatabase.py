@@ -24,7 +24,7 @@ class CustNameDatabase:
                 self.discard_nm_set = set()
 
             if question_names:
-                self.question_nm_set = set(discard_names)
+                self.question_nm_set = set(question_names)
             else:
                 self.question_nm_set = set()
 
@@ -57,11 +57,13 @@ class CustNameDatabase:
             if use_clean_name:
                 p.sort(key=lambda w: clear_cust_name(w))
                 d.sort(key=lambda w: clear_cust_name(w))
-                if sort_questions: q.sort(key=lambda w: clear_cust_name(w))
+                if sort_questions:
+                    q.sort(key=lambda w: clear_cust_name(w))
             else:
                 p.sort()
                 d.sort()
-                if sort_questions: q.sort()
+                if sort_questions:
+                    q.sort()
 
             d = [TxtMark.DSCRD + w for w in d]
             q = [TxtMark.QUE + w for w in q]
@@ -71,13 +73,24 @@ class CustNameDatabase:
         def count_primary(self):
             return len(self.primary_nm_set)
 
-        def count_question(self):
+        def count_que(self):
             return len(self.question_nm_set)
 
         def count_discard(self):
             return len(self.discard_nm_set)
 
-    def __init__(self, input_df: pd.DataFrame):
+    def __init__(self, input_df: pd.DataFrame = None):
+
+
+        self.rows = list()
+        self.all_primary_names_set = set()
+
+        if input_df is not None:
+            self.init_with_dataframe(input_df)
+
+        return
+
+    def init_with_dataframe(self, input_df: pd.DataFrame):
 
         list_of_txt_rows = input_df.values.tolist()
         self.rows = list()
@@ -121,6 +134,9 @@ class CustNameDatabase:
     def delete_marked_rows(self):
         self.rows = [r for r in self.rows if not r.marked_for_delete]
 
+    def num_of_rows(self):
+        return len(self.rows)
+
     def todataframe(self) -> pd.DataFrame:
 
         checked_names = set()
@@ -148,6 +164,11 @@ class CustNameDatabase:
     def count_rows(self):
         return len(self.rows)
 
-    def count_question(self):
-        return sum(row.count_question() for row in self.rows)
+    def count_question_names(self):
+        return sum(row.count_que() for row in self.rows)
 
+    def count_primary_names(self):
+        return sum(row.count_primary() for row in self.rows)
+
+    def count_discard_names(self):
+        return sum(row.count_discard() for row in self.rows)

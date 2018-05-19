@@ -1,2 +1,5 @@
 venv/
 datafiles/
+__pycache__/
+.idea/
+geckodriver.log
