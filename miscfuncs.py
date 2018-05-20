@@ -1,3 +1,5 @@
+import pandas as pd
+
 # -*- coding: utf-8 -*-
 """
 Created on Thu Aug  3 14:44:47 2017
@@ -135,3 +137,13 @@ def get_value_from_dict_by_key(dct, key, return_if_not_found=""):
 
 def is_nan(num):
     return num != num
+
+
+def name_dataframe_to_sets(df: pd.DataFrame):
+
+    df_rows = df.values.tolist()
+    return set(frozenset(filter(lambda r: isinstance(r, str), row)) for row in df_rows)
+
+
+
+
