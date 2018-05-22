@@ -1,6 +1,11 @@
 import pandas as pd
 import customernamedistance as cnd
+from miscfuncs import take_only_not_empty_str
 
+import logging
+
+class ProcessNamesException(Exception):
+    pass
 
 def get_dict(data_df):
 
@@ -8,7 +13,7 @@ def get_dict(data_df):
 
     dct = {}
     for row in list_of_rows:
-        row = [w for w in row if isinstance(w, str)]
+        row = take_only_not_empty_str(row)
         row = [w for w in row if w[:1] != '~' and w[:1] != '?']
         for w in row:
             dct[w] = row[0]
@@ -18,15 +23,11 @@ def get_dict(data_df):
 
 def assemble_df(input_list_of_rows: list):
 
-    checked_names = set()
-    for row in input_list_of_rows:
-        checked_names.update(row[0])
-
     assemble_list = list()
     q_count = 0
     for row in input_list_of_rows:
 
-        row[2] = row[2] - row[0] - row[1] - checked_names
+        row[2] = row[2] - row[0] - row[1] # - checked_names
 
         if row[0] & row[1]:
             raise Exception('assemble_df: Conflicts in the row:{0}'.format(' '.join(row[0])))
@@ -48,6 +49,10 @@ def assemble_df(input_list_of_rows: list):
 
         assemble_list.sort(key=lambda w: cnd.clear_cust_name(w[0]))
 
+    #logging.debug("**************************** assemble_df  ********************************")
+    #for row in assemble_list:
+        #logging.debug("assemble_df.assemble_list:{0}".format(', '.join(row)))
+
     max_row_word_count = max(len(r) for r in assemble_list)
 
     headers = ['Core Name'] + ['name' + str(i) for i in range(max_row_word_count - 1)]
@@ -66,7 +71,7 @@ def convert_db_to_list_of_rows_of_sets(input_df: pd.DataFrame):
     list_of_rows = input_df.values.tolist()
     output = list()
     for row in list_of_rows:
-        row = [w for w in row if isinstance(w, str)]
+        row = take_only_not_empty_str(row)
         r = list()
         r.append({w for w in row if w[0] != '~' and w[0] != '?'})  # r[0] = "ok"
         r.append({w[1:] for w in row if w[0] == '~'})  # r[1] = rejected
@@ -82,15 +87,17 @@ def process_alias(lookslike_database_df: pd.DataFrame, alias_df: pd.DataFrame):
     alias_data = convert_db_to_list_of_rows_of_sets(alias_df)
 
     output = list()
+    all_used_names = set()
     for alias_row in alias_data:
+
         r0 = alias_row[0]
-        r1 = set()
-        r2 = set()
+        if r0 & all_used_names:
+            raise ProcessNamesException('process_alias: Duplicates:{0}'.format(' '.join(r0)))
+
+        all_used_names.update(r0)
         for i, lookslike_row in enumerate(lookslike_data):
             if alias_row[0] & lookslike_row[0]:
                 r0.update(lookslike_row[0])
-                #r1.update(lookslike_row[1])
-                #r2.update(lookslike_row[2])
                 lookslike_data[i][0] = set()  # Mark line for deletion
 
         output.append([r0, set(), set()])
@@ -128,7 +135,7 @@ def process_lookslike(
     # convert to sets
     work_db = list()
     for row in lookslike_db_as_list_of_rows:
-        row = [w for w in row if isinstance(w, str)]
+        row = take_only_not_empty_str(row)
         r = list()
         r.append({w for w in row if w[0] != '~' and w[0] != '?'}) #r[0] = "ok"
         r.append({w[1:] for w in row if w[0] == '~'}) #r[1] = rejected
@@ -139,6 +146,9 @@ def process_lookslike(
     for row in work_db:
         for name in row[0]:
             row[2].update(cnd.find_lookslike_as_list(name, all_customer_names, max_dist))
+
+    for row in work_db:
+        logging.debug("process_lookslike.work_db:{0} ?{1} ~{2}".format(row[0], row[2], row[1]))
 
     while True:
         row_index_for_deletion = []
@@ -170,7 +180,13 @@ def process_lookslike(
             work_db = [w for w in work_db if w[0]]
             break
 
+    logging.debug("**********************************************************************")
+    for row in work_db:
+        logging.debug("process_lookslike.work_db:{0} ?{1} ~{2}".format(row[0], row[2], row[1]))
+
+
     output_df = assemble_df(work_db)
 
     return output_df
+
 

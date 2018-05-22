@@ -144,6 +144,7 @@ def name_dataframe_to_sets(df: pd.DataFrame):
     df_rows = df.values.tolist()
     return set(frozenset(filter(lambda r: isinstance(r, str), row)) for row in df_rows)
 
-
+def take_only_not_empty_str(input_list):
+    return list(filter(lambda w: isinstance(w, str) and w != '', input_list))
 
 
