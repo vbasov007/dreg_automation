@@ -1,5 +1,8 @@
+
+import logging
 import pandas as pd
 from customernamedistance import clear_cust_name
+from miscfuncs import take_only_not_empty_str
 
 
 class TxtMark(object):
@@ -97,7 +100,8 @@ class CustNameDatabase:
         self.all_primary_names_set = set()
 
         for txt_row in list_of_txt_rows:
-            txt_row = [w for w in txt_row if isinstance(w, str)]
+            #txt_row = [w for w in txt_row if isinstance(w, str)]
+            txt_row = take_only_not_empty_str(txt_row)
             self.rows.append(self.Row(
                 primary_names={w for w in txt_row if w[0] != TxtMark.DSCRD and w[0] != TxtMark.QUE},
                 discard_names={w[1:] for w in txt_row if w[0] == TxtMark.DSCRD},
@@ -107,6 +111,17 @@ class CustNameDatabase:
         self.update_all_primary_names_set()
 
         return
+
+    def add_all_primary_names_as_new_rows(self, db):
+        for row in db.rows:
+            for w in row.primary_nm_set:
+                if w not in self.all_primary_names_set:
+                    self.rows.append(self.Row({w}))
+
+        self.update_all_primary_names_set()
+
+        return
+
 
     def update_all_primary_names_set(self):
 
@@ -172,3 +187,7 @@ class CustNameDatabase:
 
     def count_discard_names(self):
         return sum(row.count_discard() for row in self.rows)
+
+    def log_all(self):
+        for row in self.rows:
+            logging.debug("{0}, ?{1}, ~{2}".format(row.primary_nm_set, row.question_nm_set, row.discard_nm_set))

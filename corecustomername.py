@@ -1,6 +1,7 @@
 import pandas as pd
-import customernamedistance as cnd
+import customernamedistance as dist
 from miscfuncs import take_only_not_empty_str
+from custnamedatabase import CustNameDatabase as cndb
 
 import logging
 
@@ -33,10 +34,10 @@ def assemble_df(input_list_of_rows: list):
             raise Exception('assemble_df: Conflicts in the row:{0}'.format(' '.join(row[0])))
 
         ok = list(row[0])
-        ok.sort(key=lambda w: cnd.clear_cust_name(w))
+        ok.sort(key=lambda w: dist.clear_cust_name(w))
 
         no = list(row[1])
-        no.sort(key=lambda w: cnd.clear_cust_name(w))
+        no.sort(key=lambda w: dist.clear_cust_name(w))
         no = ["~" + w for w in no]
 
         q = list(row[2])
@@ -47,7 +48,7 @@ def assemble_df(input_list_of_rows: list):
 
         assemble_list.append(list(ok + q + no))
 
-        assemble_list.sort(key=lambda w: cnd.clear_cust_name(w[0]))
+        assemble_list.sort(key=lambda w: dist.clear_cust_name(w[0]))
 
     #logging.debug("**************************** assemble_df  ********************************")
     #for row in assemble_list:
@@ -119,17 +120,29 @@ def process_lookslike(
     alias_df: pd.DataFrame = None
 ):
 
+
     lookslike_db_as_list_of_rows = lookslike_database_df.values.tolist()
+    #lookslike_database = cndb(lookslike_database_df)
+
+
+
     # add new lines of similar lookslike words
     if new_names:
         for name in new_names:
             lookslike_db_as_list_of_rows.append([name])
+
+    #if new_names:
+     #   lookslike_database.add_new_rows_from_list(new_names)
 
     if alias_df is not None:
         alias_db_as_list_of_rows = alias_df.values.tolist()
         for row in alias_db_as_list_of_rows:
             for name in row:
                 lookslike_db_as_list_of_rows.append([name])
+
+    #if alias_df is not None:
+    #    alias_database = cnd(alias_df)
+
 
 
     # convert to sets
@@ -142,10 +155,9 @@ def process_lookslike(
         r.append({w[1:] for w in row if w[0] == '?'}) #r[2] = question
         work_db.append(list(r))
 
-
     for row in work_db:
         for name in row[0]:
-            row[2].update(cnd.find_lookslike_as_list(name, all_customer_names, max_dist))
+            row[2].update(dist.find_lookslike_as_list(name, all_customer_names, max_dist))
 
     for row in work_db:
         logging.debug("process_lookslike.work_db:{0} ?{1} ~{2}".format(row[0], row[2], row[1]))

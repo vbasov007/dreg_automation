@@ -1,3 +1,4 @@
+import logging
 import os
 import unittest
 from unittest import TestCase
@@ -53,6 +54,22 @@ class TestCustNameDatabase(TestCase):
         self.assertEqual(database.get_primary_names_by_index(4), {"ARGOS ELECTRON","ARGOS-ELECTRON","ARGOS-TRADE"})
 
         return
+
+    def test_add_all_primary_names_as_new_rows(self):
+        df = pd.read_excel(os.path.join("Tests", "test_lookslike.xlsx"))
+        database = CustNameDatabase(df)
+
+        df = pd.read_excel(os.path.join("Tests", "test_add_all_primary_names_as_new_rows.xlsx"))
+        alias_db = CustNameDatabase(df)
+
+        database.add_all_primary_names_as_new_rows(alias_db)
+
+        database.log_all()
+
+        self.assertEqual(database.count_rows(), 14)
+        self.assertEqual(database.count_question_names(), 3)
+        self.assertEqual(database.count_primary_names(), 23)
+        self.assertEqual(database.count_discard_names(), 19)
 
 if __name__ == '__main__':
     unittest.main()
