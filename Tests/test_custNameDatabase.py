@@ -11,7 +11,7 @@ from custnamedatabase import CustNameDatabase
 class TestCustNameDatabase(TestCase):
 
     def test_init_with_dataframe(self):
-        df = pd.read_excel(os.path.join("Tests", "test_lookslike.xlsx"))
+        df = pd.read_excel(os.path.join("Tests", "Data", "test_lookslike.xlsx"))
         database = CustNameDatabase(df)
 
         self.assertEqual(database.count_rows(), 7)
@@ -25,7 +25,7 @@ class TestCustNameDatabase(TestCase):
 
     def test_add_new_rows_from_list(self):
 
-        df = pd.read_excel(os.path.join("Tests", "test_lookslike.xlsx"))
+        df = pd.read_excel(os.path.join("Tests", "Data", "test_lookslike.xlsx"))
         database = CustNameDatabase(df)
 
         database.add_new_rows_from_list(["ARGOS-ELECTRON", "NEW CUSTOMER",])
@@ -40,7 +40,7 @@ class TestCustNameDatabase(TestCase):
         return
 
     def test_mark_row_for_deletion(self):
-        df = pd.read_excel(os.path.join("Tests", "test_lookslike.xlsx"))
+        df = pd.read_excel(os.path.join("Tests", "Data", "test_lookslike.xlsx"))
         database = CustNameDatabase(df)
 
         database.mark_row_for_deletion(4)
@@ -56,10 +56,10 @@ class TestCustNameDatabase(TestCase):
         return
 
     def test_add_all_primary_names_as_new_rows(self):
-        df = pd.read_excel(os.path.join("Tests", "test_lookslike.xlsx"))
+        df = pd.read_excel(os.path.join("Tests", "Data", "test_lookslike.xlsx"))
         database = CustNameDatabase(df)
 
-        df = pd.read_excel(os.path.join("Tests", "test_add_all_primary_names_as_new_rows.xlsx"))
+        df = pd.read_excel(os.path.join("Tests", "Data", "test_add_all_primary_names_as_new_rows.xlsx"))
         alias_db = CustNameDatabase(df)
 
         database.add_all_primary_names_as_new_rows(alias_db)

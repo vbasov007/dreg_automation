@@ -2,7 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="587664ef-0d3e-4671-9a80-29f8ee32b5b5" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/Tests/test_add_all_primary_names_as_new_rows.xlsx" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Tests/test_custNameDatabase.py" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/test_custNameDatabase.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/test_lookslike.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/test_process_alias_aliasxlsx.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/test_process_alias_duplicate_error_aliasxlsx.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/test_process_alias_lookslikexlsx_input.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/test_process_alias_result.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/test_process_lookslike_aliasxlsx.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/test_process_lookslike_input.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/test_process_lookslike_result.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/test_process_names.py" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/test_process_names.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/testres.xlsx" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/corecustomername.py" beforeDir="false" afterPath="$PROJECT_DIR$/corecustomername.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/custnamedatabase.py" beforeDir="false" afterPath="$PROJECT_DIR$/custnamedatabase.py" afterDir="false" />
     </list>
@@ -12,28 +23,6 @@
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
-  </component>
-  <component name="DockManager">
-    <window id="1">
-      <content type="file-editors">
-        <state>
-          <leaf>
-            <file leaf-file-name="corecustomername.py" pinned="false" current-in-tab="true">
-              <entry file="file://$PROJECT_DIR$/corecustomername.py">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="336">
-                    <caret line="123" column="4" selection-start-line="123" selection-start-column="4" selection-end-line="123" selection-end-column="4" />
-                    <folding>
-                      <element signature="e#0#19#0" expanded="true" />
-                    </folding>
-                  </state>
-                </provider>
-              </entry>
-            </file>
-          </leaf>
-        </state>
-      </content>
-    </window>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
@@ -49,8 +38,8 @@
       <file leaf-file-name="test_process_names.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Tests/test_process_names.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="373">
-              <caret line="48" lean-forward="true" selection-start-line="48" selection-end-line="48" />
+            <state relative-caret-position="798">
+              <caret line="63" column="64" selection-start-line="63" selection-start-column="64" selection-end-line="63" selection-end-column="64" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -58,11 +47,14 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Tests/__init__.py">
+      <file leaf-file-name="corecustomername.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/corecustomername.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="64">
-              <caret line="4" column="85" lean-forward="true" selection-start-line="4" selection-start-column="85" selection-end-line="4" selection-end-column="85" />
+            <state relative-caret-position="165">
+              <caret line="89" selection-start-line="89" selection-end-line="89" />
+              <folding>
+                <element signature="e#0#19#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -70,8 +62,8 @@
       <file leaf-file-name="test_find_lookslike_as_list.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Tests/test_find_lookslike_as_list.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="304">
-              <caret line="19" lean-forward="true" selection-start-line="19" selection-end-line="19" />
+            <state relative-caret-position="352">
+              <caret line="22" column="62" lean-forward="true" selection-start-line="22" selection-start-column="62" selection-end-line="22" selection-end-column="62" />
               <folding>
                 <element signature="e#0#29#0" expanded="true" />
               </folding>
@@ -82,8 +74,8 @@
       <file leaf-file-name="unittest_log.log" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/unittest_log.log">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="544">
-              <caret line="34" lean-forward="true" selection-start-line="34" selection-end-line="34" />
+            <state>
+              <caret lean-forward="true" />
             </state>
           </provider>
         </entry>
@@ -91,8 +83,8 @@
       <file leaf-file-name="customernamedistance.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/customernamedistance.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="480">
-              <caret line="63" column="89" lean-forward="true" selection-start-line="63" selection-start-column="89" selection-end-line="63" selection-end-column="89" />
+            <state relative-caret-position="597">
+              <caret line="86" column="14" lean-forward="true" selection-start-line="86" selection-start-column="14" selection-end-line="86" selection-end-column="14" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -100,20 +92,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/.gitignore">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="32">
-              <caret line="2" column="12" lean-forward="true" selection-start-line="2" selection-start-column="12" selection-end-line="2" selection-end-column="12" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="test_custNameDatabase.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="test_custNameDatabase.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Tests/test_custNameDatabase.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="325">
-              <caret line="57" column="36" selection-start-line="57" selection-start-column="8" selection-end-line="57" selection-end-column="46" />
+            <state relative-caret-position="364">
+              <caret line="50" column="60" lean-forward="true" selection-start-line="50" selection-start-column="60" selection-end-line="50" selection-end-column="60" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -135,10 +118,22 @@
       <file leaf-file-name="custnamedatabase.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/custnamedatabase.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="314">
-              <caret line="120" column="43" lean-forward="true" selection-start-line="120" selection-start-column="43" selection-end-line="120" selection-end-column="43" />
+            <state relative-caret-position="298">
+              <caret line="163" column="23" lean-forward="true" selection-start-line="163" selection-start-column="8" selection-end-line="163" selection-end-column="48" />
               <folding>
                 <element signature="e#1#15#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="custnamedatabase.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/datafiles/custnamedatabase.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="618">
+              <caret line="112" column="32" lean-forward="true" selection-start-line="112" selection-start-column="32" selection-end-line="112" selection-end-column="32" />
+              <folding>
+                <marker date="1527226528866" expanded="true" signature="2930:2936" ph="..." />
               </folding>
             </state>
           </provider>
@@ -160,9 +155,15 @@
       <find>isinstance</find>
       <find>filter</find>
       <find>Exception</find>
+      <find>CustNameDatabaseException</find>
+      <find>join(&quot;Tests&quot;,</find>
+      <find>totxtlist</find>
+      <find>to</find>
+      <find>totxt</find>
     </findStrings>
     <replaceStrings>
       <replace>synonym</replace>
+      <replace>join(&quot;Tests&quot;, &quot;Data&quot;,</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -185,17 +186,18 @@
         <option value="$PROJECT_DIR$/Tests/test_find_lookslike_as_list.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/Tests/test_process_names.py" />
-        <option value="$PROJECT_DIR$/custnamedatabase.py" />
         <option value="$PROJECT_DIR$/Tests/test_custNameDatabase.py" />
+        <option value="$PROJECT_DIR$/datafiles/custnamedatabase.py" />
+        <option value="$PROJECT_DIR$/custnamedatabase.py" />
         <option value="$PROJECT_DIR$/corecustomername.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="255" />
-    <option name="y" value="15" />
-    <option name="width" value="1405" />
-    <option name="height" value="1005" />
+    <option name="x" value="204" />
+    <option name="y" value="12" />
+    <option name="width" value="1124" />
+    <option name="height" value="804" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -216,6 +218,12 @@
               <item name="dreg_automation2" type="b2602c69:ProjectViewProjectNode" />
               <item name="dreg_automation2" type="462c0819:PsiDirectoryNode" />
               <item name="Tests" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="dreg_automation2" type="b2602c69:ProjectViewProjectNode" />
+              <item name="dreg_automation2" type="462c0819:PsiDirectoryNode" />
+              <item name="Tests" type="462c0819:PsiDirectoryNode" />
+              <item name="Data" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -330,10 +338,10 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="1" visible="true" weight="0.1751302" />
+      <window_info active="true" content_ui="combo" id="Project" order="1" visible="true" weight="0.14010416" />
       <window_info anchor="bottom" id="TODO" order="11" />
       <window_info anchor="bottom" id="Event Log" order="1" sideWeight="0.50210303" side_tool="true" weight="0.33585313" />
       <window_info anchor="bottom" id="Version Control" order="2" />
@@ -369,23 +377,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/dregdata.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4692">
-          <caret line="279" column="64" selection-start-line="279" selection-start-column="64" selection-end-line="279" selection-end-column="64" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36-32/Lib/site-packages/pandas/core/generic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="26367">
-          <caret line="1607" selection-start-line="1607" selection-end-line="1607" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/miscfuncs.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2261">
@@ -676,17 +667,7 @@
     <entry file="file://$PROJECT_DIR$/Tests/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="64">
-          <caret line="4" column="85" lean-forward="true" selection-start-line="4" selection-start-column="85" selection-end-line="4" selection-end-column="85" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Tests/test_process_names.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="373">
-          <caret line="48" lean-forward="true" selection-start-line="48" selection-end-line="48" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
+          <caret line="4" column="85" selection-start-line="4" selection-start-column="85" selection-end-line="4" selection-end-column="85" />
         </state>
       </provider>
     </entry>
@@ -694,16 +675,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="533">
           <caret line="146" column="17" selection-start-line="146" selection-start-column="4" selection-end-line="146" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/customernamedistance.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="480">
-          <caret line="63" column="89" lean-forward="true" selection-start-line="63" selection-start-column="89" selection-end-line="63" selection-end-column="89" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -716,47 +687,84 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Tests/test_find_lookslike_as_list.py">
+    <entry file="file://$PROJECT_DIR$/Tests/test_process_names.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="304">
-          <caret line="19" lean-forward="true" selection-start-line="19" selection-end-line="19" />
+        <state relative-caret-position="798">
+          <caret line="63" column="64" selection-start-line="63" selection-start-column="64" selection-end-line="63" selection-end-column="64" />
           <folding>
-            <element signature="e#0#29#0" expanded="true" />
+            <element signature="e#0#9#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/custnamedatabase.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="314">
-          <caret line="120" column="43" lean-forward="true" selection-start-line="120" selection-start-column="43" selection-end-line="120" selection-end-column="43" />
-          <folding>
-            <element signature="e#1#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/unittest_log.log">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="544">
-          <caret line="34" lean-forward="true" selection-start-line="34" selection-end-line="34" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Tests/test_custNameDatabase.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="325">
-          <caret line="57" column="36" selection-start-line="57" selection-start-column="8" selection-end-line="57" selection-end-column="46" />
+        <state relative-caret-position="364">
+          <caret line="50" column="60" lean-forward="true" selection-start-line="50" selection-start-column="60" selection-end-line="50" selection-end-column="60" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Tests/test_find_lookslike_as_list.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="352">
+          <caret line="22" column="62" lean-forward="true" selection-start-line="22" selection-start-column="62" selection-end-line="22" selection-end-column="62" />
+          <folding>
+            <element signature="e#0#29#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/unittest_log.log">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret lean-forward="true" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36-32/Lib/logging/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="645">
+          <caret line="1565" column="8" lean-forward="true" selection-start-line="1565" selection-start-column="8" selection-end-line="1565" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/customernamedistance.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="597">
+          <caret line="86" column="14" lean-forward="true" selection-start-line="86" selection-start-column="14" selection-end-line="86" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datafiles/custnamedatabase.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="618">
+          <caret line="112" column="32" lean-forward="true" selection-start-line="112" selection-start-column="32" selection-end-line="112" selection-end-column="32" />
+          <folding>
+            <marker date="1527226528866" expanded="true" signature="2930:2936" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/custnamedatabase.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="298">
+          <caret line="163" column="23" lean-forward="true" selection-start-line="163" selection-start-column="8" selection-end-line="163" selection-end-column="48" />
+          <folding>
+            <element signature="e#1#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/corecustomername.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="123" column="4" selection-start-line="123" selection-start-column="4" selection-end-line="123" selection-end-column="4" />
+        <state relative-caret-position="165">
+          <caret line="89" selection-start-line="89" selection-end-line="89" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
           </folding>

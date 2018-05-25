@@ -84,30 +84,32 @@ def convert_db_to_list_of_rows_of_sets(input_df: pd.DataFrame):
 
 def process_alias(lookslike_database_df: pd.DataFrame, alias_df: pd.DataFrame):
 
-    lookslike_data = convert_db_to_list_of_rows_of_sets(lookslike_database_df)
-    alias_data = convert_db_to_list_of_rows_of_sets(alias_df)
+    ll_db = cndb(lookslike_database_df)
+    al_db = cndb(alias_df)
 
-    output = list()
-    all_used_names = set()
-    for alias_row in alias_data:
+    duplicated_list = al_db.get_all_duplicated_primary_names_as_list()
+    if duplicated_list:
+        raise ProcessNamesException('process_alias: Duplicates in alias file:{0}'.format(', '.join(duplicated_list)))
 
-        r0 = alias_row[0]
-        if r0 & all_used_names:
-            raise ProcessNamesException('process_alias: Duplicates:{0}'.format(' '.join(r0)))
+    duplicated_list = ll_db.get_all_duplicated_primary_names_as_list()
+    if duplicated_list:
+        raise ProcessNamesException('process_alias: Duplicates in lookslike file:{0}'.format(', '.join(duplicated_list)))
 
-        all_used_names.update(r0)
-        for i, lookslike_row in enumerate(lookslike_data):
-            if alias_row[0] & lookslike_row[0]:
-                r0.update(lookslike_row[0])
-                lookslike_data[i][0] = set()  # Mark line for deletion
+    num_of_rows = al_db.num_of_rows()
+    for i in range(num_of_rows):
+        alias_names = list(al_db.get_primary_names_by_index(i))
+        for name in alias_names:
+            found_rows_indexes = ll_db.search_indexes_by_primary_name(name)
+            if len(found_rows_indexes) == 1:
+                al_db.update_primary_names_by_index(i, ll_db.get_primary_names_by_index(found_rows_indexes[0]))
+                ll_db.mark_row_for_deletion(found_rows_indexes[0])
+            elif len(found_rows_indexes) > 1:
+                raise ProcessNamesException("Duplicated name in lookslike_db: {0}".format(name))
 
-        output.append([r0, set(), set()])
+    ll_db.delete_marked_rows()
+    al_db.append_db(ll_db)
 
-    for row in lookslike_data:
-        if row[0]:
-            output.append([row[0], set(), set()]) # add not modified lines from lookslike
-
-    output_df = assemble_df(output)
+    output_df = al_db.todataframe(primary_nm_only=True)
 
     return output_df
 
@@ -120,84 +122,48 @@ def process_lookslike(
     alias_df: pd.DataFrame = None
 ):
 
+    ll_db = cndb(lookslike_database_df)
 
-    lookslike_db_as_list_of_rows = lookslike_database_df.values.tolist()
-    #lookslike_database = cndb(lookslike_database_df)
-
-
-
-    # add new lines of similar lookslike words
     if new_names:
-        for name in new_names:
-            lookslike_db_as_list_of_rows.append([name])
-
-    #if new_names:
-     #   lookslike_database.add_new_rows_from_list(new_names)
+        ll_db.add_new_rows_from_list(new_names)
 
     if alias_df is not None:
-        alias_db_as_list_of_rows = alias_df.values.tolist()
-        for row in alias_db_as_list_of_rows:
-            for name in row:
-                lookslike_db_as_list_of_rows.append([name])
+        alias_database = cndb(alias_df)
+        ll_db.add_all_primary_names_as_new_rows(alias_database)
 
-    #if alias_df is not None:
-    #    alias_database = cnd(alias_df)
+    for i in range(ll_db.num_of_rows()):
+        for name in ll_db.get_primary_names_by_index(i):
+            ll_db.update_question_names_by_index(i,
+                                                 dist.find_lookslike_as_list(name,
+                                                                             all_customer_names,
+                                                                             max_dist))
 
+    for i in range(ll_db.num_of_rows()):
+        logging.debug("process_lookslike.ll_db:{0} ?{1} ~{2}".format(ll_db.get_primary_names_by_index(i),
+                                                                     ll_db.get_question_names_by_index(i),
+                                                                     ll_db.get_discard_names_by_index(i)))
 
+    updated_some_row = True
+    while updated_some_row:
+        updated_some_row = False
+        for i in range(ll_db.num_of_rows()-1):
+            if not ll_db.is_marked_for_deletion(i):
+                for j in range(i+1, ll_db.num_of_rows()):
+                    if not ll_db.is_marked_for_deletion(j):
+                        if ll_db.is_intersect_primary_names_in_rows(i, j):
+                            ll_db.update_first_row_with_second_row(i, j)
+                            ll_db.mark_row_for_deletion(j)
+                            updated_some_row = True
 
-    # convert to sets
-    work_db = list()
-    for row in lookslike_db_as_list_of_rows:
-        row = take_only_not_empty_str(row)
-        r = list()
-        r.append({w for w in row if w[0] != '~' and w[0] != '?'}) #r[0] = "ok"
-        r.append({w[1:] for w in row if w[0] == '~'}) #r[1] = rejected
-        r.append({w[1:] for w in row if w[0] == '?'}) #r[2] = question
-        work_db.append(list(r))
-
-    for row in work_db:
-        for name in row[0]:
-            row[2].update(dist.find_lookslike_as_list(name, all_customer_names, max_dist))
-
-    for row in work_db:
-        logging.debug("process_lookslike.work_db:{0} ?{1} ~{2}".format(row[0], row[2], row[1]))
-
-    while True:
-        row_index_for_deletion = []
-        num_of_rows = len(work_db)
-        for i in range(num_of_rows-1):
-            if i not in row_index_for_deletion:
-                row_i = work_db[i]
-                updated = False
-                for j in range(i + 1, num_of_rows):
-                    row_j = work_db[j]
-                    if j not in row_index_for_deletion:
-                        if row_j[0] & row_i[0]:
-                            row_i[0].update(row_j[0])
-                            row_i[1].update(row_j[1])
-                            row_i[2].update(row_j[2])
-                            row_index_for_deletion.append(j)
-                            updated = True
-
-                if updated:
-                    work_db[i] = row_i
-
-        if row_index_for_deletion:
-            for i in row_index_for_deletion:
-                work_db[i] = None
-            work_db = [w for w in work_db if w]
-            # work_db = [w for w in work_db if w[0]]
-
-        else:
-            work_db = [w for w in work_db if w[0]]
-            break
+    ll_db.delete_marked_rows()
 
     logging.debug("**********************************************************************")
-    for row in work_db:
-        logging.debug("process_lookslike.work_db:{0} ?{1} ~{2}".format(row[0], row[2], row[1]))
+    for i in range(ll_db.num_of_rows()):
+        logging.debug("process_lookslike.ll_db:{0} ?{1} ~{2}".format(ll_db.get_primary_names_by_index(i),
+                                                                     ll_db.get_question_names_by_index(i),
+                                                                     ll_db.get_discard_names_by_index(i)))
 
-
-    output_df = assemble_df(work_db)
+    output_df = ll_db.todataframe()
 
     return output_df
 

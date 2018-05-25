@@ -9,11 +9,11 @@ class TxtMark(object):
     DSCRD = "~"
     QUE = "?"
 
+class CustNameDatabaseException(Exception):
+    pass
+
 
 class CustNameDatabase:
-
-    class CustNameDatabaseException(Exception):
-        pass
 
     class Row:
 
@@ -34,10 +34,6 @@ class CustNameDatabase:
             self.marked_for_delete = False
             return
 
-        def reduce_question_nm_set(self, reduce_by_set: set):
-            self.question_nm_set = self.question_nm_set - self.primary_nm_set - self.discard_nm_set - reduce_by_set
-            return
-
         def is_correct(self):
 
             if self.primary_nm_set & self.discard_nm_set:
@@ -51,7 +47,22 @@ class CustNameDatabase:
 
             return True
 
-        def totxtlist(self, use_clean_name=True,  sort_questions=False):
+        def update(self, other_row):
+            self.primary_nm_set.update(other_row.primary_nm_set)
+            self.question_nm_set.update(other_row.question_nm_set)
+            self.discard_nm_set.update(other_row.discard_nm_set)
+            # reduce questions
+            self.question_nm_set = self.question_nm_set - self.primary_nm_set - self.discard_nm_set
+
+            if self.primary_nm_set & self.discard_nm_set:
+                logging.warning("Conflicting names ''{0}'' in row ''{1}''".format(self.primary_nm_set &
+                                                                                  self.discard_nm_set,
+                                                                                  self.primary_nm_set))
+                raise CustNameDatabaseException
+
+            return
+
+        def totxtlist(self, use_clean_name=True, primary_names_only = False):
 
             p = list(self.primary_nm_set)
             d = list(self.discard_nm_set)
@@ -60,18 +71,19 @@ class CustNameDatabase:
             if use_clean_name:
                 p.sort(key=lambda w: clear_cust_name(w))
                 d.sort(key=lambda w: clear_cust_name(w))
-                if sort_questions:
-                    q.sort(key=lambda w: clear_cust_name(w))
+                q.sort(key=lambda w: clear_cust_name(w))
             else:
                 p.sort()
                 d.sort()
-                if sort_questions:
-                    q.sort()
+                q.sort()
 
             d = [TxtMark.DSCRD + w for w in d]
             q = [TxtMark.QUE + w for w in q]
 
-            return list(p + q + d)
+            if primary_names_only:
+                return list(p)
+            else:
+                return list(p + q + d)
 
         def count_primary(self):
             return len(self.primary_nm_set)
@@ -100,7 +112,6 @@ class CustNameDatabase:
         self.all_primary_names_set = set()
 
         for txt_row in list_of_txt_rows:
-            #txt_row = [w for w in txt_row if isinstance(w, str)]
             txt_row = take_only_not_empty_str(txt_row)
             self.rows.append(self.Row(
                 primary_names={w for w in txt_row if w[0] != TxtMark.DSCRD and w[0] != TxtMark.QUE},
@@ -122,7 +133,6 @@ class CustNameDatabase:
 
         return
 
-
     def update_all_primary_names_set(self):
 
         self.all_primary_names_set = set()
@@ -140,19 +150,73 @@ class CustNameDatabase:
 
         return
 
+    def search_indexes_by_primary_name(self, name: str) -> list:
+        res = list()
+        for i, row in enumerate(self.rows):
+            if name in row.primary_nm_set:
+                res.append(i)
+        return res
+
+    def append_db(self, merging_db):
+        self.rows = self.rows + merging_db.rows
+        return
+
+    def get_all_duplicated_primary_names_as_list(self) -> list:
+
+        duplicated_names = list()
+        seen_names = list()
+        for row in self.rows:
+            for pn in row.primary_nm_set:
+                if pn in seen_names:
+                    duplicated_names.append(pn)
+                else:
+                    seen_names.append(pn)
+
+        return duplicated_names
+
+    def update_question_names_by_index(self, index, new_names):
+        self.rows[index].question_nm_set.update(new_names)
+        return
+
+    def update_primary_names_by_index(self, index, new_names):
+        self.rows[index].primary_nm_set.update(new_names)
+        return
+
+    def update_discard_names_by_index(self, index, new_names):
+        self.rows[index].discard_nm_set.update(new_names)
+        return
+
+    def update_first_row_with_second_row(self, i1, i2):
+        self.rows[i1].update(self.rows[i2])
+        return
+
     def get_primary_names_by_index(self, index) -> set:
             return self.rows[index].primary_nm_set
 
+    def get_discard_names_by_index(self, index) -> set:
+            return self.rows[index].discard_nm_set
+
+    def get_question_names_by_index(self, index) -> set:
+            return self.rows[index].question_nm_set
+
     def mark_row_for_deletion(self, index):
         self.rows[index].marked_for_delete = True
+        return
 
     def delete_marked_rows(self):
         self.rows = [r for r in self.rows if not r.marked_for_delete]
+        return
+
+    def is_marked_for_deletion(self, index):
+        return self.rows[index].marked_for_delete
+
+    def is_intersect_primary_names_in_rows(self, i, j):
+        return bool(self.rows[i].primary_nm_set & self.rows[j].primary_nm_set)
 
     def num_of_rows(self):
         return len(self.rows)
 
-    def todataframe(self) -> pd.DataFrame:
+    def todataframe(self, primary_nm_only = False) -> pd.DataFrame:
 
         checked_names = set()
         for row in self.rows:
@@ -161,10 +225,10 @@ class CustNameDatabase:
         assemble_list = list()
 
         for row in self.rows:
-            row.reduce_question_nm_set(checked_names)
+            row.question_nm_set = row.question_nm_set - row.primary_nm_set - row.discard_nm_set
             if not row.is_correct():
-                raise self.CustNameDatabaseException('todataframe: Conflicts in the row:{0}'.format(' '.join(row.primary_nm_set)))
-            assemble_list.append(row.totxtlist())
+                raise CustNameDatabaseException('todataframe: Conflicts in the row:{0}'.format(' '.join(row.primary_nm_set)))
+            assemble_list.append(row.totxtlist(primary_names_only=primary_nm_only, use_clean_name=True))
 
         assemble_list.sort(key=lambda w: clear_cust_name(w[0]))
         max_row_word_count = max(len(r) for r in assemble_list)
