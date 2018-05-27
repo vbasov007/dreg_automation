@@ -1,22 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="587664ef-0d3e-4671-9a80-29f8ee32b5b5" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/Tests/test_add_all_primary_names_as_new_rows.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/test_custNameDatabase.py" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/test_custNameDatabase.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/test_lookslike.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/test_process_alias_aliasxlsx.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/test_process_alias_duplicate_error_aliasxlsx.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/test_process_alias_lookslikexlsx_input.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/test_process_alias_result.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/test_process_lookslike_aliasxlsx.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/test_process_lookslike_input.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/test_process_lookslike_result.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/test_process_names.py" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/test_process_names.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/testres.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/corecustomername.py" beforeDir="false" afterPath="$PROJECT_DIR$/corecustomername.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/custnamedatabase.py" beforeDir="false" afterPath="$PROJECT_DIR$/custnamedatabase.py" afterDir="false" />
-    </list>
+    <list default="true" id="587664ef-0d3e-4671-9a80-29f8ee32b5b5" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -50,8 +35,8 @@
       <file leaf-file-name="corecustomername.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/corecustomername.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="165">
-              <caret line="89" selection-start-line="89" selection-end-line="89" />
+            <state relative-caret-position="389">
+              <caret line="103" column="111" lean-forward="true" selection-start-line="103" selection-start-column="111" selection-end-line="103" selection-end-column="111" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
               </folding>
@@ -193,7 +178,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="204" />
     <option name="y" value="12" />
     <option name="width" value="1124" />
@@ -338,7 +323,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="1" visible="true" weight="0.14010416" />
@@ -763,8 +748,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/corecustomername.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="89" selection-start-line="89" selection-end-line="89" />
+        <state relative-caret-position="389">
+          <caret line="103" column="111" lean-forward="true" selection-start-line="103" selection-start-column="111" selection-end-line="103" selection-end-column="111" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
           </folding>
