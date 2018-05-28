@@ -6,6 +6,7 @@ Tests/__pycache__
 .idea/
 geckodriver.log
 *.log
+.vscode/
 
 
 
