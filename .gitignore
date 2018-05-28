@@ -1,6 +1,8 @@
 venv/
 datafiles/
 __pycache__/
+.idea/workspace.xml
+Tests/__pycache__
 .idea/
 geckodriver.log
 *.log

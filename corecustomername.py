@@ -5,8 +5,10 @@ from custnamedatabase import CustNameDatabase as cndb
 
 import logging
 
+
 class ProcessNamesException(Exception):
     pass
+
 
 def get_dict(data_df):
 
@@ -20,66 +22,6 @@ def get_dict(data_df):
             dct[w] = row[0]
 
     return dct
-
-
-def assemble_df(input_list_of_rows: list):
-
-    assemble_list = list()
-    q_count = 0
-    for row in input_list_of_rows:
-
-        row[2] = row[2] - row[0] - row[1] # - checked_names
-
-        if row[0] & row[1]:
-            raise Exception('assemble_df: Conflicts in the row:{0}'.format(' '.join(row[0])))
-
-        ok = list(row[0])
-        ok.sort(key=lambda w: dist.clear_cust_name(w))
-
-        no = list(row[1])
-        no.sort(key=lambda w: dist.clear_cust_name(w))
-        no = ["~" + w for w in no]
-
-        q = list(row[2])
-        #q.sort(key=lambda w: cnd.clear_cust_name(w))
-        q = ["?" + w for w in q]
-
-        q_count = q_count + len(q)
-
-        assemble_list.append(list(ok + q + no))
-
-        assemble_list.sort(key=lambda w: dist.clear_cust_name(w[0]))
-
-    #logging.debug("**************************** assemble_df  ********************************")
-    #for row in assemble_list:
-        #logging.debug("assemble_df.assemble_list:{0}".format(', '.join(row)))
-
-    max_row_word_count = max(len(r) for r in assemble_list)
-
-    headers = ['Core Name'] + ['name' + str(i) for i in range(max_row_word_count - 1)]
-
-    output_df = pd.DataFrame(columns=headers)
-
-    for row in assemble_list:
-        output_df = output_df.append(pd.Series(row, index=headers[:len(row)]), ignore_index=True)
-
-    print(q_count)
-
-    return output_df
-
-
-def convert_db_to_list_of_rows_of_sets(input_df: pd.DataFrame):
-    list_of_rows = input_df.values.tolist()
-    output = list()
-    for row in list_of_rows:
-        row = take_only_not_empty_str(row)
-        r = list()
-        r.append({w for w in row if w[0] != '~' and w[0] != '?'})  # r[0] = "ok"
-        r.append({w[1:] for w in row if w[0] == '~'})  # r[1] = rejected
-        r.append({w[1:] for w in row if w[0] == '?'})  # r[2] = question
-        output.append(r)
-
-    return output
 
 
 def process_alias(lookslike_database_df: pd.DataFrame, alias_df: pd.DataFrame):
@@ -104,7 +46,7 @@ def process_alias(lookslike_database_df: pd.DataFrame, alias_df: pd.DataFrame):
                 al_db.update_primary_names_by_index(i, ll_db.get_primary_names_by_index(found_rows_indexes[0]))
                 ll_db.mark_row_for_deletion(found_rows_indexes[0])
             elif len(found_rows_indexes) > 1:
-                raise ProcessNamesException("Duplicated name in lookslike_db: {0}".format(name))
+                raise ProcessNamesException("Duplicated name in lookslike file: {0}".format(name))
 
     ll_db.delete_marked_rows()
     al_db.append_db(ll_db)
