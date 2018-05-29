@@ -24,13 +24,13 @@ class TestProcess_names(TestCase):
             alias_df: pd.DataFrame = None)
         '''
 
-        lookslike_df = pd.read_excel(os.path.join("Tests", "Data", "test_process_lookslike_input.xlsx"))
+        lookslike_df = pd.read_excel(os.path.join("Tests", "class_CustNameDatabase", "Data", "test_process_lookslike_input.xlsx"))
         all_customer_names = ["ABIT LTD", "AMBIT OOO", "AMBIT LLC", "AMBIT",
                               "NPF ATI", "ATI NPF", "ATI", "NPFI", "ATIC",
                               "LEDEL", "LEDER", "INKOTEX", "SHTIL", "SCHTYL"]
 
         new_names = ["ADBIT OOO", "INCOTEX"]
-        alias_df = pd.read_excel(os.path.join("Tests", "Data", "test_process_lookslike_aliasxlsx.xlsx"))
+        alias_df = pd.read_excel(os.path.join("Tests", "class_CustNameDatabase", "Data", "test_process_lookslike_aliasxlsx.xlsx"))
 
         output_df = process_lookslike(lookslike_df,
                                    all_customer_names,
@@ -38,7 +38,7 @@ class TestProcess_names(TestCase):
                                    0.3,
                                    alias_df )
 
-        correct_df = pd.read_excel(os.path.join("Tests", "Data", "test_process_lookslike_result.xlsx"))
+        correct_df = pd.read_excel(os.path.join("Tests", "class_CustNameDatabase", "Data", "test_process_lookslike_result.xlsx"))
         correct_set = name_dataframe_to_sets(correct_df)
         output_set = name_dataframe_to_sets(output_df)
 
@@ -51,17 +51,17 @@ class TestProcess_names(TestCase):
 
         # process_alias(lookslike_database_df: pd.DataFrame, alias_df: pd.DataFrame):
 
-        lookslike_df = pd.read_excel(os.path.join("Tests", "Data", "test_process_alias_lookslikexlsx_input.xlsx"))
-        alias_df = pd.read_excel(os.path.join("Tests", "Data", "test_process_alias_duplicate_error_aliasxlsx.xlsx"))
+        lookslike_df = pd.read_excel(os.path.join("Tests", "class_CustNameDatabase", "Data", "test_process_alias_lookslikexlsx_input.xlsx"))
+        alias_df = pd.read_excel(os.path.join("Tests", "class_CustNameDatabase", "Data", "test_process_alias_duplicate_error_aliasxlsx.xlsx"))
 
         with self.assertRaises(ProcessNamesException):
             process_alias(lookslike_df, alias_df)
 
-        alias_df = pd.read_excel(os.path.join("Tests", "Data", "test_process_alias_aliasxlsx.xlsx"))
+        alias_df = pd.read_excel(os.path.join("Tests", "class_CustNameDatabase", "Data", "test_process_alias_aliasxlsx.xlsx"))
 
         output_df = process_alias(lookslike_df, alias_df)
 
-        correct_df = pd.read_excel(os.path.join("Tests", "Data", "test_process_alias_result.xlsx"))
+        correct_df = pd.read_excel(os.path.join("Tests", "class_CustNameDatabase", "Data", "test_process_alias_result.xlsx"))
 
         correct_set = name_dataframe_to_sets(correct_df)
         output_set = name_dataframe_to_sets(output_df)

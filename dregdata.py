@@ -94,6 +94,38 @@ class DregData:
     def id_list_all(self):
         return self.dreg_df[ColName.DREG_ID].tolist()
 
+    def column_list_all(self):
+        return list(self.dreg_df.columns)
+
+    def add_empty_row_with_dreg_id(self, dreg_id):
+        if dreg_id not in self.id_list_all():
+            new_row = pd.Series([dreg_id], index=[ColName.DREG_ID])
+            self.dreg_df.append(new_row, ignore_index=True)
+        else:
+            raise DregData.DregDataException('add_empty_row_with_dreg_id: dreg_id {0} already exists'.format(dreg_id))
+
+    def update(self, new_dreg_data):
+        old_dreg_ids = self.id_list_all()
+        new_dreg_ids = new_dreg_data.id_list_all()
+
+        old_col_list = self.column_list_all()
+        new_col_list = new_dreg_data.column_list_all()
+
+        if old_col_list != new_col_list:
+            raise DregData.DregDataException('DregData.update: old_col_list != new_col_list')
+
+        for dreg_id in new_dreg_ids:
+            if dreg_id not in old_dreg_ids:
+                self.add_empty_row_with_dreg_id(dreg_id)
+
+            for col in old_col_list:
+                val = new_dreg_data.get_value_from_col_by_id(col, dreg_id)
+                self.setval(dreg_id, col, val)
+
+        return
+
+
+
     @staticmethod
     def customer_name_list_all(dreg_df):
         res = dreg_df[ColName.ORIGINAL_CUSTOMER_NAME].tolist()
@@ -172,7 +204,7 @@ class DregData:
     def get_value_from_col_by_id(self, col_name, dreg_id):
         data = self.dreg_df.loc[self.dreg_df[ColName.DREG_ID] == dreg_id]
         if data.empty:
-            raise DregData.DregDataException
+            raise DregData.DregDataException('DregData.update: dreg_id {0} doesnt exist'.format(dreg_id))
         else:
             res = data[col_name].tolist()[0]
             if is_nan(res):
