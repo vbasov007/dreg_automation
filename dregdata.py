@@ -57,39 +57,75 @@ class DregData:
     class DregDataException(Exception):
         pass
 
-    def __init__(self, dreg_df: pd.DataFrame, core_cust_names: dict = None, core_part_num: dict = None):
+    def __init__(self, dreg_df: pd.DataFrame,
+                 core_cust_names: dict = None,
+                 core_part_num: dict = None,
+                 add_working_columns=True):
 
         self.dreg_df = dreg_df
         self.core_cust_names = core_cust_names
 
         self.columns_in_original_order = list(self.dreg_df.columns)
+        self.subcon_list = list()
 
-        if self.is_column_not_exist(ColName.COMMENTS):
+        # make sure that DREG_ID is str and not int or float
+        self.dreg_df[ColName.DREG_ID] = self.dreg_df[ColName.DREG_ID].apply(str)
+
+        if add_working_columns:
+            self.if_not_exist_add_column_comments()
+            self.if_not_exist_add_column_reject_reason()
+            self.if_not_exist_add_column_action()
+            self.renew_column_core_part(core_part_num)
+            self.renew_column_core_subcon_name(core_cust_names)
+            self.renew_column_core_cust_name(core_cust_names)
+            self.if_not_exist_add_column_clicker_message()
+
+        return
+
+    def if_not_exist_add_column_comments(self):
+        if not self.is_column_exist(ColName.COMMENTS):
             self.add_left_column(ColName.COMMENTS)
 
-        if self.is_column_not_exist(ColName.REJECTION_REASON):
+    def if_not_exist_add_column_reject_reason(self):
+        if not self.is_column_exist(ColName.REJECTION_REASON):
             self.add_left_column(ColName.REJECTION_REASON)
 
-        if self.is_column_not_exist(ColName.ACTION):
+    def if_not_exist_add_column_action(self):
+        if not self.is_column_exist(ColName.ACTION):
             self.add_left_column(ColName.ACTION)
 
-        if self.is_column_not_exist(ColName.CORE_PART):
-            self.add_left_column(ColName.CORE_PART)
-            self.apply_core_values(core_part_num, ColName.ORIGINAL_PART_NAME, ColName.CORE_PART)
-
-        if self.is_column_not_exist(ColName.CORE_SUBCON_NAME):
-            self.add_left_column(ColName.CORE_SUBCON_NAME)
-            self.apply_core_values(core_cust_names, ColName.ORIGINAL_SUBCON_NAME, ColName.CORE_SUBCON_NAME)
-
-        if self.is_column_not_exist(ColName.CORE_CUST_NAME):
-            self.add_left_column(ColName.CORE_CUST_NAME)
-            self.apply_core_values(core_cust_names, ColName.ORIGINAL_CUSTOMER_NAME, ColName.CORE_CUST_NAME)
-
-        if self.is_column_not_exist(ColName.CLICKER_MESSAGE):
+    def if_not_exist_add_column_clicker_message(self):
+        if not self.is_column_exist(ColName.CLICKER_MESSAGE):
             self.add_left_column(ColName.CLICKER_MESSAGE)
+
+    def renew_column_core_part(self, core_part_num: dict):
+
+        if not self.is_column_exist(ColName.CORE_PART):
+            self.add_left_column(ColName.CORE_PART)
+
+        self.apply_core_values(core_part_num, ColName.ORIGINAL_PART_NAME, ColName.CORE_PART)
+
+        return
+
+    def renew_column_core_subcon_name(self, core_cust_names: dict):
+        if not self.is_column_exist(ColName.CORE_SUBCON_NAME):
+            self.add_left_column(ColName.CORE_SUBCON_NAME)
+
+        self.apply_core_values(core_cust_names, ColName.ORIGINAL_SUBCON_NAME, ColName.CORE_SUBCON_NAME)
 
         self.subcon_list = self.dreg_df[ColName.CORE_SUBCON_NAME].tolist()
         self.subcon_list = filter(bool, self.subcon_list)  # remove empty
+
+        return
+
+    def renew_column_core_cust_name(self, core_cust_names: dict):
+        if not self.is_column_exist(ColName.CORE_CUST_NAME):
+            self.add_left_column(ColName.CORE_CUST_NAME)
+
+        self.apply_core_values(core_cust_names, ColName.ORIGINAL_CUSTOMER_NAME, ColName.CORE_CUST_NAME)
+
+        return
+
 
     def id_list_all(self):
         return self.dreg_df[ColName.DREG_ID].tolist()
@@ -100,7 +136,7 @@ class DregData:
     def add_empty_row_with_dreg_id(self, dreg_id):
         if dreg_id not in self.id_list_all():
             new_row = pd.Series([dreg_id], index=[ColName.DREG_ID])
-            self.dreg_df.append(new_row, ignore_index=True)
+            self.dreg_df = self.dreg_df.append(new_row, ignore_index=True)
         else:
             raise DregData.DregDataException('add_empty_row_with_dreg_id: dreg_id {0} already exists'.format(dreg_id))
 
@@ -215,11 +251,18 @@ class DregData:
     def get_core_part_num_by_id(self, dreg_id):
         return self.get_value_from_col_by_id(ColName.CORE_PART, dreg_id)
 
+    def get_orig_part_num_by_id(self, dreg_id):
+        return self.get_value_from_col_by_id(ColName.ORIGINAL_PART_NAME, dreg_id)
+
+
     def get_disti_by_id(self, dreg_id):
         return self.get_value_from_col_by_id(ColName.DISTI_NAME, dreg_id)
 
-    def get_customer_by_id(self, dreg_id):
+    def get_core_customer_by_id(self, dreg_id):
         return self.get_value_from_col_by_id(ColName.CORE_CUST_NAME, dreg_id)
+
+    def get_orig_customer_by_id(self, dreg_id):
+        return self.get_value_from_col_by_id(ColName.ORIGINAL_CUSTOMER_NAME, dreg_id)
 
     def get_subcon_by_id(self, dreg_id):
         return self.get_value_from_col_by_id(ColName.CORE_SUBCON_NAME, dreg_id)
@@ -280,8 +323,9 @@ class DregData:
         self.columns_in_original_order.insert(0, column_name)
         self.dreg_df[column_name] = pd.Series(index=self.dreg_df.index)
 
-    def is_column_not_exist(self, column_name):
-        return column_name not in list(self.dreg_df.columns)
+    def is_column_exist(self, column_name):
+        return column_name in list(self.dreg_df.columns)
+
 
     def apply_core_values(self, replacing_dict: dict, source_col_name: str, destination_col_name: str):
 

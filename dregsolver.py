@@ -33,7 +33,7 @@ class DregSolver:
     def process_dreg_by_id(self, dd: DregData, dreg_id):
 
         part = dd.get_core_part_num_by_id(dreg_id)
-        customer = dd.get_customer_by_id(dreg_id)
+        customer = dd.get_core_customer_by_id(dreg_id)
         disti = dd.get_disti_by_id(dreg_id)
         # subcon = dd.get_subcon_by_id(dreg_id)
 
