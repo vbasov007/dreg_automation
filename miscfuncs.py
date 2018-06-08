@@ -1,4 +1,5 @@
 import pandas as pd
+import datetime
 
 # -*- coding: utf-8 -*-
 """
@@ -10,7 +11,6 @@ import sys
 
 
 def input_number_in_range(question, minimum, maximum):
-
     while True:
         try:
             print('range = ', minimum, maximum)
@@ -44,7 +44,8 @@ def choose_file(filelist):
 
 
 def format_float(value, decimals_separator, num_of_decimals):
-    return "%s%s%0*u" % (int(value), decimals_separator, num_of_decimals, (10 ** num_of_decimals)*(value - int(value)))
+    return "%s%s%0*u" % (
+    int(value), decimals_separator, num_of_decimals, (10 ** num_of_decimals) * (value - int(value)))
 
 
 class CSVWriter:
@@ -107,7 +108,6 @@ def convert_sap_num_to_float(sap_str):
 
 
 def remove_duplicates(list_with_duplicates: list) -> list:
-
     seen = set()
     list_without_duplicates = []
     for x in list_with_duplicates:
@@ -120,7 +120,6 @@ def remove_duplicates(list_with_duplicates: list) -> list:
 
 
 def remove_duplicates_and_empty_items(list_with_duplicates: list) -> list:
-
     res = remove_duplicates(list_with_duplicates)
     res = [item for item in res if item]  # remove empty
 
@@ -140,11 +139,18 @@ def is_nan(num):
 
 
 def name_dataframe_to_sets(df: pd.DataFrame):
-
     df_rows = df.values.tolist()
     return set(frozenset(filter(lambda r: isinstance(r, str), row)) for row in df_rows)
+
 
 def take_only_not_empty_str(input_list):
     return list(filter(lambda w: isinstance(w, str) and w != '', input_list))
 
+
+def string2datatime(d: str):
+    """
+    :param s: date in format dd.mm.yyyy
+    :return: datatime.date
+    """
+    return datetime.date(int(d[6:10]), int(d[3:5]), int(d[0:2]))
 

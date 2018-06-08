@@ -2,6 +2,7 @@ import pandas as pd
 from miscfuncs import get_value_from_dict_by_key
 from miscfuncs import remove_duplicates_and_empty_items
 from miscfuncs import is_nan
+from miscfuncs import string2datatime
 
 
 class ColName(object):
@@ -61,6 +62,9 @@ class DregData:
                  core_cust_names: dict = None,
                  core_part_num: dict = None,
                  add_working_columns=True):
+
+        if not is_dreg_data_format(dreg_df):
+            raise DregData.DregDataException("DregData.__init__: DREG table format incorrect!")
 
         self.dreg_df = dreg_df
         self.core_cust_names = core_cust_names
@@ -126,26 +130,27 @@ class DregData:
 
         return
 
-
+    @property
     def id_list_all(self):
         return self.dreg_df[ColName.DREG_ID].tolist()
 
+    @property
     def column_list_all(self):
         return list(self.dreg_df.columns)
 
     def add_empty_row_with_dreg_id(self, dreg_id):
-        if dreg_id not in self.id_list_all():
+        if dreg_id not in self.id_list_all:
             new_row = pd.Series([dreg_id], index=[ColName.DREG_ID])
             self.dreg_df = self.dreg_df.append(new_row, ignore_index=True)
         else:
             raise DregData.DregDataException('add_empty_row_with_dreg_id: dreg_id {0} already exists'.format(dreg_id))
 
     def update(self, new_dreg_data):
-        old_dreg_ids = self.id_list_all()
-        new_dreg_ids = new_dreg_data.id_list_all()
+        old_dreg_ids = self.id_list_all
+        new_dreg_ids = new_dreg_data.id_list_all
 
-        old_col_list = self.column_list_all()
-        new_col_list = new_dreg_data.column_list_all()
+        old_col_list = self.column_list_all
+        new_col_list = new_dreg_data.column_list_all
 
         if old_col_list != new_col_list:
             raise DregData.DregDataException('DregData.update: old_col_list != new_col_list')
@@ -159,8 +164,6 @@ class DregData:
                 self.setval(dreg_id, col, val)
 
         return
-
-
 
     @staticmethod
     def customer_name_list_all(dreg_df):
@@ -223,6 +226,7 @@ class DregData:
     def id_list_open_for_all(self, lookup_id_list=None):
         return self.id_list_by_value_in_col(ColName.REJECTION_REASON, Reason.OPEN_FOR_ALL, lookup_id_list)
 
+    @property
     def id_list_action_not_empty(self):
         res = self.id_list_by_value_in_col(ColName.ACTION, Action.APPROVE)
         res.extend(self.id_list_by_value_in_col(ColName.ACTION, Action.REJECT))
@@ -253,7 +257,6 @@ class DregData:
 
     def get_orig_part_num_by_id(self, dreg_id):
         return self.get_value_from_col_by_id(ColName.ORIGINAL_PART_NAME, dreg_id)
-
 
     def get_disti_by_id(self, dreg_id):
         return self.get_value_from_col_by_id(ColName.DISTI_NAME, dreg_id)
@@ -324,8 +327,7 @@ class DregData:
         self.dreg_df[column_name] = pd.Series(index=self.dreg_df.index)
 
     def is_column_exist(self, column_name):
-        return column_name in list(self.dreg_df.columns)
-
+        return is_column_exist_in_df(self.dreg_df, column_name)
 
     def apply_core_values(self, replacing_dict: dict, source_col_name: str, destination_col_name: str):
 
@@ -349,4 +351,45 @@ class DregData:
 
     def id_list_clicker_fail(self):
         return self.id_list_by_value_in_col(ColName.CLICKER_MESSAGE, ClickerResult.FAIL)
+
+    @property
+    def latest_dreg_date(self):
+        return latest_and_earliest_dreg_dates_in_df(self.dreg_df)[0]
+
+    @property
+    def earliest_dreg_date(self):
+        return latest_and_earliest_dreg_dates_in_df(self.dreg_df)[1]
+
+    @property
+    def count_new_dregs(self):
+        return len(self.id_list_by_value_in_col(ColName.STATUS, Status.NEW))
+
+    @property
+    def count_all_lines(self):
+        return count_dreg_lines_in_df(self.dreg_df)
+
+
+def latest_and_earliest_dreg_dates_in_df(df):
+    lst = df[ColName.REG_DATE].tolist()
+    dates = [string2datatime(d) for d in lst]
+    return [max(dates), min(dates)]
+
+
+def is_column_exist_in_df(df, col_name):
+    return col_name in df.columns
+
+
+def count_dreg_lines_in_df(df):
+    return len(df[ColName.DREG_ID].tolist())
+
+
+def is_dreg_data_format(df):
+
+    correct = is_column_exist_in_df(df, ColName.REG_DATE) and \
+              is_column_exist_in_df(df, ColName.DREG_ID) and \
+              is_column_exist_in_df(df, ColName.ORIGINAL_CUSTOMER_NAME) and \
+              is_column_exist_in_df(df, ColName.DISTI_NAME) and \
+              is_column_exist_in_df(df, ColName.ORIGINAL_PART_NAME)
+
+    return correct
 

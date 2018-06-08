@@ -31,9 +31,11 @@ class TestDregData(TestCase):
         result_df.to_excel(writer, index=False)
         writer.save()
 
-        self.assertEqual(len(init_dd.id_list_all()), 10)
-        self.assertEqual(len(init_dd.column_list_all()), 23)
+        self.assertEqual(len(init_dd.id_list_all), 10)
+        self.assertEqual(len(init_dd.column_list_all), 23)
         self.assertEqual(init_dd.get_orig_customer_by_id('20010744'), 'IZEVSKIY RADIOZAVOD')
         self.assertEqual(init_dd.get_orig_part_num_by_id('20013667'), 'FD650R17IE4')
+        self.assertEqual(str(init_dd.latest_dreg_date), "2011-03-02")
+        self.assertEqual(str(init_dd.earliest_dreg_date), "2008-12-15")
 
         return

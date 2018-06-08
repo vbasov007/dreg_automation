@@ -37,7 +37,7 @@ class DregSolver:
         disti = dd.get_disti_by_id(dreg_id)
         # subcon = dd.get_subcon_by_id(dreg_id)
 
-        dreg_id_all_exclude_current = dd.id_list_all()
+        dreg_id_all_exclude_current = dd.id_list_all
         dreg_id_all_exclude_current.remove(dreg_id)
 
         # customer is in sub-contructor list: warning
