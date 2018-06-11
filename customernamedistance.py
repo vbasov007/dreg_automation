@@ -150,6 +150,8 @@ def clear_cust_name(name='') -> str:
 
     r = re.sub(r"\bNPK\b", '', r)
 
+    r = re.sub(r"\bGROUP\b", '', r)
+
     # remove double and more spaces
     r = re.sub(r" {2,}", ' ', r)
 

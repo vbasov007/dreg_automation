@@ -32,7 +32,9 @@ class DregSolver:
 
     def process_dreg_by_id(self, dd: DregData, dreg_id):
 
-        part = dd.get_core_part_num_by_id(dreg_id)
+        core_part = dd.get_core_part_num_by_id(dreg_id)
+        orig_part = dd.get_orig_part_num_by_id(dreg_id)
+
         customer = dd.get_core_customer_by_id(dreg_id)
         disti = dd.get_disti_by_id(dreg_id)
         # subcon = dd.get_subcon_by_id(dreg_id)
@@ -44,9 +46,14 @@ class DregSolver:
         if dd.is_customer_in_subcon_list(customer):
             dd.add_comment(dreg_id, "Customer is in subcon list")
 
-        # different dreg id but the same part and customer
-        lst = dd.id_list_by_core_part(part, dreg_id_all_exclude_current)
-        dreg_id_with_same_part_and_customers = dd.id_list_by_core_cust(customer, lst)
+        # different dreg id but the same core_part and customer
+        lst = dd.id_list_by_core_part(core_part, dreg_id_all_exclude_current)
+        dreg_id_with_same_core_part_and_customers = dd.id_list_by_core_cust(customer, lst)
+
+        # different dreg_id but the same original part (needed for duplication reject)
+        lst = dd.id_list_by_orig_part(orig_part, dreg_id_all_exclude_current)
+        dreg_id_with_same_orig_part_and_customers = dd.id_list_by_core_cust(customer, lst)
+
 
         # Other registrations rejected with "open for all"
         #check_list = dd.id_list_open_for_all(dreg_id_with_same_part_and_customers)
@@ -56,7 +63,7 @@ class DregSolver:
         #   return
 
         # Valid approved registration for other disti: reject
-        check_list = dd.id_list_exclude_distributor(disti, dreg_id_with_same_part_and_customers)
+        check_list = dd.id_list_exclude_distributor(disti, dreg_id_with_same_core_part_and_customers)
         check_list = dd.id_list_status_approved(check_list)
         if check_list:
             dd.reject(dreg_id)
@@ -68,7 +75,7 @@ class DregSolver:
             return
 
         # Duplicated registration for the same disti: reject
-        check_list = dd.id_list_by_distributor(disti, dreg_id_with_same_part_and_customers)
+        check_list = dd.id_list_by_distributor(disti, dreg_id_with_same_orig_part_and_customers)
         check_list = dd.id_list_status_approved(check_list)
         if check_list:
             dd.reject(dreg_id)
@@ -80,7 +87,7 @@ class DregSolver:
             return
 
         # New registrations for more than one distri: Action = '???'
-        check_list = dd.id_list_exclude_distributor(disti, dreg_id_with_same_part_and_customers)
+        check_list = dd.id_list_exclude_distributor(disti, dreg_id_with_same_core_part_and_customers)
         check_list = dd.id_list_status_new(check_list)
         if check_list:
             dd.ask_for_manual_decision(dreg_id)
@@ -92,7 +99,7 @@ class DregSolver:
             return
 
         # someone has pending: manual decision
-        check_list = dd.id_list_status_pending(dreg_id_with_same_part_and_customers)
+        check_list = dd.id_list_status_pending(dreg_id_with_same_core_part_and_customers)
         if check_list:
             dd.ask_for_manual_decision(dreg_id)
             self.count_question += 1
@@ -103,7 +110,7 @@ class DregSolver:
             return
 
         # Other disti has no open registration but business win: reject
-        check_list = dd.id_list_exclude_distributor(disti, dreg_id_with_same_part_and_customers)
+        check_list = dd.id_list_exclude_distributor(disti, dreg_id_with_same_core_part_and_customers)
         check_list = dd.id_list_proj_stage_bw(check_list)
         if check_list:
             dd.reject(dreg_id)

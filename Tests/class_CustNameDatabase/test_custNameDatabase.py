@@ -43,7 +43,7 @@ class TestCustNameDatabase(TestCase):
         database = CustNameDatabase(df)
 
         database.mark_row_for_deletion(4)
-        database.delete_marked_rows()
+        database.delete_rows_marked_for_deletion()
 
         self.assertEqual(database.count_rows(), 6)
         self.assertEqual(database.count_question_names(), 3)

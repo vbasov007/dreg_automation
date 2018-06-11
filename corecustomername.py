@@ -48,7 +48,7 @@ def process_alias(lookslike_database_df: pd.DataFrame, alias_df: pd.DataFrame):
             elif len(found_rows_indexes) > 1:
                 raise ProcessNamesException("Duplicated name in lookslike file: {0}".format(name))
 
-    ll_db.delete_marked_rows()
+    ll_db.delete_rows_marked_for_deletion()
     al_db.append_db(ll_db)
 
     output_df = al_db.todataframe(primary_nm_only=True)
@@ -89,15 +89,18 @@ def process_lookslike(
     while updated_some_row:
         updated_some_row = False
         for i in range(ll_db.num_of_rows()-1):
-            if not ll_db.is_marked_for_deletion(i):
+            if (not ll_db.is_market_as_conflict(i)) and (not ll_db.is_marked_for_deletion(i)):
                 for j in range(i+1, ll_db.num_of_rows()):
-                    if not ll_db.is_marked_for_deletion(j):
+                    if (not ll_db.is_marked_for_deletion(j)) and (not ll_db.is_marked_for_deletion(j)):
                         if ll_db.is_intersect_primary_names_in_rows(i, j):
-                            ll_db.update_first_row_with_second_row(i, j)
-                            ll_db.mark_row_for_deletion(j)
-                            updated_some_row = True
+                            if ll_db.update_first_row_with_second_row(i, j):  # check if no conflicts in the lines
+                                ll_db.mark_row_for_deletion(j)
+                            else:
+                                ll_db.mark_row_conflict(i)
+                                ll_db.mark_row_conflict(j)
+                                updated_some_row = True
 
-    ll_db.delete_marked_rows()
+    ll_db.delete_rows_marked_for_deletion()
 
     logging.debug("**********************************************************************")
     for i in range(ll_db.num_of_rows()):

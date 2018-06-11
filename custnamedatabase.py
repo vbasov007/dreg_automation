@@ -1,4 +1,3 @@
-
 import logging
 import pandas as pd
 from customernamedistance import clear_cust_name
@@ -9,12 +8,12 @@ class TxtMark(object):
     DSCRD = "~"
     QUE = "?"
 
+
 class CustNameDatabaseException(Exception):
     pass
 
 
 class CustNameDatabase:
-
     class Row:
 
         def __init__(self, primary_names: set, discard_names=None, question_names=None):
@@ -32,6 +31,8 @@ class CustNameDatabase:
                 self.question_nm_set = set()
 
             self.marked_for_delete = False
+            self.marked_conflict = False
+
             return
 
         def is_correct(self):
@@ -58,11 +59,12 @@ class CustNameDatabase:
                 logging.warning("Conflicting names ''{0}'' in row ''{1}''".format(self.primary_nm_set &
                                                                                   self.discard_nm_set,
                                                                                   self.primary_nm_set))
-                raise CustNameDatabaseException
+                return False
+                # raise CustNameDatabaseException
 
-            return
+            return True
 
-        def totxtlist(self, use_clean_name=True, primary_names_only = False):
+        def totxtlist(self, use_clean_name=True, primary_names_only=False):
 
             p = list(self.primary_nm_set)
             d = list(self.discard_nm_set)
@@ -95,7 +97,6 @@ class CustNameDatabase:
             return len(self.discard_nm_set)
 
     def __init__(self, input_df: pd.DataFrame = None):
-
 
         self.rows = list()
         self.all_primary_names_set = set()
@@ -187,28 +188,34 @@ class CustNameDatabase:
         return
 
     def update_first_row_with_second_row(self, i1, i2):
-        self.rows[i1].update(self.rows[i2])
-        return
+        return self.rows[i1].update(self.rows[i2])
 
     def get_primary_names_by_index(self, index) -> set:
-            return self.rows[index].primary_nm_set
+        return self.rows[index].primary_nm_set
 
     def get_discard_names_by_index(self, index) -> set:
-            return self.rows[index].discard_nm_set
+        return self.rows[index].discard_nm_set
 
     def get_question_names_by_index(self, index) -> set:
-            return self.rows[index].question_nm_set
+        return self.rows[index].question_nm_set
 
     def mark_row_for_deletion(self, index):
         self.rows[index].marked_for_delete = True
         return
 
-    def delete_marked_rows(self):
+    def mark_row_conflict(self, index):
+        self.rows[index].marked_conflict = True
+        return
+
+    def delete_rows_marked_for_deletion(self):
         self.rows = [r for r in self.rows if not r.marked_for_delete]
         return
 
     def is_marked_for_deletion(self, index):
         return self.rows[index].marked_for_delete
+
+    def is_market_as_conflict(self, index):
+        return self.rows[index].marked_conflict
 
     def is_intersect_primary_names_in_rows(self, i, j):
         return bool(self.rows[i].primary_nm_set & self.rows[j].primary_nm_set)
@@ -216,7 +223,7 @@ class CustNameDatabase:
     def num_of_rows(self):
         return len(self.rows)
 
-    def todataframe(self, primary_nm_only = False) -> pd.DataFrame:
+    def todataframe(self, primary_nm_only=False) -> pd.DataFrame:
 
         checked_names = set()
         for row in self.rows:
@@ -227,7 +234,8 @@ class CustNameDatabase:
         for row in self.rows:
             row.question_nm_set = row.question_nm_set - row.primary_nm_set - row.discard_nm_set
             if not row.is_correct():
-                raise CustNameDatabaseException('todataframe: Conflicts in the row:{0}'.format(' '.join(row.primary_nm_set)))
+                # raise CustNameDatabaseException('todataframe: Conflicts in the row:{0}'.format(' '.join(row.primary_nm_set)))
+                print('Conflicts in the row:{0}'.format(' '.join(row.primary_nm_set)))
             assemble_list.append(row.totxtlist(primary_names_only=primary_nm_only, use_clean_name=True))
 
         assemble_list.sort(key=lambda w: clear_cust_name(w[0]))

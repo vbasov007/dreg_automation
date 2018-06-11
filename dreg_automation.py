@@ -275,6 +275,28 @@ def main():
             print_file_info(p_old_file, mode=Modes.DREG_FILE)
             print_file_info(p_new_file, mode=Modes.DREG_FILE)
 
+            print("Result will be saved in exportdreg.xlsx")
+            is_yes = input("Continue y/n?")
+            if is_yes == 'y':
+                init = pd.read_excel(p_old_file)
+                upd = pd.read_excel(p_new_file)
+
+                init_dd = DregData(init, add_working_columns=False)
+                upd_dd = DregData(upd, add_working_columns=False)
+
+                init_dd.update(upd_dd)
+
+                output_df = init_dd.get_dreg_data()
+
+                output_file_name = wrk_file(FN.DATA_FOLDER, "exportdreg.xlsx")
+                writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
+                output_df.to_excel(writer, index=False)
+                writer.save()
+
+                print("Done!")
+
+                print_file_info(p_old_file, mode=Modes.DREG_FILE)
+
         elif answer == "q":
             break
 

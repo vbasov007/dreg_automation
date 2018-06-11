@@ -235,6 +235,9 @@ class DregData:
     def id_list_by_core_part(self, core_part, lookup_id_list=None):
         return self.id_list_by_value_in_col(ColName.CORE_PART, core_part, lookup_id_list)
 
+    def id_list_by_orig_part(self, orig_part, lookup_id_list=None):
+        return self.id_list_by_value_in_col(ColName.ORIGINAL_PART_NAME, orig_part, lookup_id_list)
+
     def id_list_by_distributor(self, disti, lookup_id_list=None):
         return self.id_list_by_value_in_col(ColName.DISTI_NAME, disti, lookup_id_list)
 
