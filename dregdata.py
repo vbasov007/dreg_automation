@@ -199,6 +199,18 @@ class DregData:
         return self.list_of_val_by_key_value(ColName.DREG_ID, col_name, exclude_value, lookup_id_list,
                                              exclude_key_value=True)
 
+    def customers_which_use_the_part(self, part_name, lookup_id_list=None, except_customer=None):
+        lst = self.list_of_val_by_key_value(ColName.ORIGINAL_CUSTOMER_NAME, ColName.CORE_PART,
+                                            part_name, lookup_id_list)
+        s = set(lst)
+
+        try:
+            s.remove(except_customer)
+        except KeyError:
+            pass
+
+        return list(s)
+
     def setval(self, dreg_id, col_num, value):
         self.dreg_df.loc[self.dreg_df[ColName.DREG_ID] == dreg_id, col_num] = value
 

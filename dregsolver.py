@@ -123,4 +123,8 @@ class DregSolver:
 
         # Approve if nothing from above
         dd.approve(dreg_id)
+        if core_part != '':
+            comment = ", ".join(dd.customers_which_use_the_part(core_part,
+                                                           dd.id_list_status_approved(dreg_id_all_exclude_current)))
+            dd.add_comment(dreg_id, comment)
         self.count_approved += 1
