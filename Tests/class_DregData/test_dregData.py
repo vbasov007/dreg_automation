@@ -8,10 +8,12 @@ import os
 
 from dregdata import DregData
 
+from dregdata import ColName
+
+
 class TestDregData(TestCase):
 
     def test_update(self):
-
         init_df = pd.read_excel(os.path.join("Tests", "class_DregData", "Data", "test_update_initial_df.xlsx"))
         upd_df = pd.read_excel(os.path.join("Tests", "class_DregData", "Data", "test_update_upd_df.xlsx"))
 
@@ -27,7 +29,8 @@ class TestDregData(TestCase):
 
         result_df = init_dd.get_dreg_data()
 
-        writer = pd.ExcelWriter(os.path.join("Tests", "class_DregData", "Data", "update_result_df.xlsx"), engine='xlsxwriter')
+        writer = pd.ExcelWriter(os.path.join("Tests", "class_DregData", "Data", "update_result_df.xlsx"),
+                                engine='xlsxwriter')
         result_df.to_excel(writer, index=False)
         writer.save()
 
@@ -37,5 +40,22 @@ class TestDregData(TestCase):
         self.assertEqual(init_dd.get_orig_part_num_by_id('20013667'), 'FD650R17IE4')
         self.assertEqual(str(init_dd.latest_dreg_date), "2011-03-02")
         self.assertEqual(str(init_dd.earliest_dreg_date), "2008-12-15")
+
+        return
+
+    def test_id_list_by_value_in_col(self):
+
+        init_df = pd.read_excel(os.path.join("Tests", "class_DregData", "Data", "test_id_list_by_val_in_col_df.xlsx"))
+        init_dd = DregData(init_df, add_working_columns=False)
+
+        lst1 = init_dd.id_list_by_value_in_col(ColName.ORIGINAL_SUBCON_NAME,"EFO OOO",
+                                        ['20009703','20010744', '20012702','20012849','20013651'])
+
+        lst2 = init_dd.id_list_exclude_value_in_col(ColName.ORIGINAL_SUBCON_NAME,"EFO OOO",
+                                        ['20009703','20010744', '20012702','20012849','20013651'])
+
+        self.assertEqual(set(lst1), {'20012849', '20013651'})
+
+        self.assertEqual(set(lst2), {'20009703', '20010744', '20012702'})
 
         return

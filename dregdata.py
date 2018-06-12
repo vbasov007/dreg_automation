@@ -179,6 +179,19 @@ class DregData:
         res = remove_duplicates_and_empty_items(res)
         return res
 
+    def list_of_val_by_key_value(self, output_col_name, key_val_name, key_val, lookup_id_list=None, exclude_key_value=False):
+
+        df = self.dreg_df
+        if lookup_id_list is not None:
+            df = self.dreg_df[self.dreg_df[ColName.DREG_ID].isin(lookup_id_list)]
+
+        if exclude_key_value:
+            df = df.loc[df[key_val_name] != key_val]
+        else:
+            df = df.loc[df[key_val_name] == key_val]
+
+        return df[output_col_name].tolist()
+
     def id_list_by_value_in_col(self, col_name, value, lookup_id_list=None):
         if lookup_id_list is not None:
             df = self.dreg_df[self.dreg_df[ColName.DREG_ID].isin(lookup_id_list)]
