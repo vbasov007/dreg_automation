@@ -193,22 +193,11 @@ class DregData:
         return df[output_col_name].tolist()
 
     def id_list_by_value_in_col(self, col_name, value, lookup_id_list=None):
-        if lookup_id_list is not None:
-            df = self.dreg_df[self.dreg_df[ColName.DREG_ID].isin(lookup_id_list)]
-            df = df.loc[df[col_name] == value]
-            return df[ColName.DREG_ID].tolist()
-        else:
-            df = self.dreg_df.loc[self.dreg_df[col_name] == value]
-            return df[ColName.DREG_ID].tolist()
+        return self.list_of_val_by_key_value(ColName.DREG_ID, col_name, value, lookup_id_list)
 
     def id_list_exclude_value_in_col(self, col_name, exclude_value, lookup_id_list=None):
-        if lookup_id_list is not None:
-            df = self.dreg_df[self.dreg_df[ColName.DREG_ID].isin(lookup_id_list)]
-            df = df.loc[df[col_name] != exclude_value]
-            return df[ColName.DREG_ID].tolist()
-        else:
-            df = self.dreg_df.loc[self.dreg_df[col_name] != exclude_value]
-            return df[ColName.DREG_ID].tolist()
+        return self.list_of_val_by_key_value(ColName.DREG_ID, col_name, exclude_value, lookup_id_list,
+                                             exclude_key_value=True)
 
     def setval(self, dreg_id, col_num, value):
         self.dreg_df.loc[self.dreg_df[ColName.DREG_ID] == dreg_id, col_num] = value
