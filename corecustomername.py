@@ -64,31 +64,42 @@ def process_lookslike(
     alias_df: pd.DataFrame = None
 ):
 
+    print('Processing "looks like" list...' )
+
     ll_db = cndb(lookslike_database_df)
 
     if new_names:
+        print('Adding new names...', end = " ")
         ll_db.add_new_rows_from_list(new_names)
+        print("Done!")
 
     if alias_df is not None:
+        print('Adding names from "alias" database...', end=" ")
         alias_database = cndb(alias_df)
         ll_db.add_all_primary_names_as_new_rows(alias_database)
+        print("Done!")
 
+    print("Searching names which looks like the same... Processing {0} lines".format(ll_db.num_of_rows()))
     for i in range(ll_db.num_of_rows()):
+        print("Line {0}: {1}".format(i, ", ".join(list(ll_db.get_primary_names_by_index(i))[:2]).ljust(80, " ")), end='\r')
         for name in ll_db.get_primary_names_by_index(i):
             ll_db.update_question_names_by_index(i,
                                                  dist.find_lookslike_as_list(name,
                                                                              all_customer_names,
                                                                              max_dist))
+    print('Done!')
 
-    for i in range(ll_db.num_of_rows()):
-        logging.debug("process_lookslike.ll_db:{0} ?{1} ~{2}".format(ll_db.get_primary_names_by_index(i),
-                                                                     ll_db.get_question_names_by_index(i),
-                                                                     ll_db.get_discard_names_by_index(i)))
+    #  for i in range(ll_db.num_of_rows()):
+    #    logging.debug("process_lookslike.ll_db:{0} ?{1} ~{2}".format(ll_db.get_primary_names_by_index(i),
+    #                                                                 ll_db.get_question_names_by_index(i),
+    #                                                                 ll_db.get_discard_names_by_index(i)))
 
+    print("Reducing intersection lines... {0} lines to process".format(ll_db.num_of_rows()))
     updated_some_row = True
     while updated_some_row:
         updated_some_row = False
         for i in range(ll_db.num_of_rows()-1):
+            print('Working on the line {0}'.format(i), end='\r')
             if (not ll_db.is_market_as_conflict(i)) and (not ll_db.is_marked_for_deletion(i)):
                 for j in range(i+1, ll_db.num_of_rows()):
                     if (not ll_db.is_marked_for_deletion(j)) and (not ll_db.is_marked_for_deletion(j)):
@@ -102,11 +113,13 @@ def process_lookslike(
 
     ll_db.delete_rows_marked_for_deletion()
 
-    logging.debug("**********************************************************************")
-    for i in range(ll_db.num_of_rows()):
-        logging.debug("process_lookslike.ll_db:{0} ?{1} ~{2}".format(ll_db.get_primary_names_by_index(i),
-                                                                     ll_db.get_question_names_by_index(i),
-                                                                     ll_db.get_discard_names_by_index(i)))
+    print("Done!")
+
+    # logging.debug("**********************************************************************")
+    # for i in range(ll_db.num_of_rows()):
+    #    logging.debug("process_lookslike.ll_db:{0} ?{1} ~{2}".format(ll_db.get_primary_names_by_index(i),
+    #                                                                 ll_db.get_question_names_by_index(i),
+    #                                                                 ll_db.get_discard_names_by_index(i)))
 
     output_df = ll_db.todataframe()
 

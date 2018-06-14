@@ -13,6 +13,8 @@ from datetime import datetime
 from dregsolver import DregSolver
 from idisclicker import IdisClicker
 
+from DregWriter import DregWriter
+
 import os.path
 
 class FN(object):
@@ -132,15 +134,19 @@ def print_file_info(file_path: str, mode = ''):
     print('File: {0}'.format(file_path))
     print('Created: {0}'.format(r_time(os.path.getctime(file_path))))
     print('Modified: {0}'.format(r_time(os.path.getmtime(file_path))))
-    
+
     if mode == Modes.DREG_FILE:
-        df = pd.read_excel(file_path)
+        try:
+            df = pd.read_excel(file_path)
+        except PermissionError:
+            print("Can't access {0}".format(file_path))
+            return
+
         if is_dreg_data_format(df):
             print("DREG file")
             print("Total number of lines: {0}".format(count_dreg_lines_in_df(df)))
             latest_earliest = latest_and_earliest_dreg_dates_in_df(df)
             print("Latest and earliest DREG date: {0} .. {1}".format(str(latest_earliest[0]), str(latest_earliest[1])))
-
         else:
             print("The file is not in DREG format")
 
@@ -163,17 +169,11 @@ def main():
 
         if answer == '0':
 
-            #print_file_info(os.path.join(FN.DATA_FOLDER, 'exportdreg.xlsx'), Modes.DREG_FILE)
+            print_file_info(os.path.join(FN.DATA_FOLDER, 'exportdreg.xlsx'), Modes.DREG_FILE)
+            print_file_info(os.path.join(FN.DATA_FOLDER, 'updatedreg.xlsx'), Modes.DREG_FILE)
             print_file_info(os.path.join(FN.DATA_FOLDER, 'lookslike.xlsx'))
             print_file_info(os.path.join(FN.DATA_FOLDER, 'alias.xlsx'))
             print_file_info(os.path.join(FN.DATA_FOLDER, 'alias.xlsx'))
-
-            print('')
-
-            dreg_files = all_dreg_files_path_in_folder_as_list(FN.DATA_FOLDER)
-
-            for f in dreg_files:
-                print_file_info(f, Modes.DREG_FILE)
 
         elif answer == '1':
 
@@ -218,8 +218,6 @@ def main():
 
             print("Check latest synonym_XXX")
 
-            break
-
         elif answer == '3':
 
             synonyms_df = pd.read_excel( wrk_file(FN.DATA_FOLDER,'synonyms.xlsx') )
@@ -243,12 +241,11 @@ def main():
 
             solver.process_all_new(dd)
 
-            dreg_df = dd.get_dreg_data()
+            writer = DregWriter()
+            writer.set_default_rules()
 
             output_file_name = wrk_file(FN.DATA_FOLDER, "dreg_analysis.xlsx", is_timestamp=True)
-            writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
-            dreg_df.to_excel(writer, index=False)
-            writer.save()
+            writer.save_dreg(output_file_name, dd)
 
             print("Done!")
 

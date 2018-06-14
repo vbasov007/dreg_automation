@@ -41,6 +41,7 @@ class Status(object):
     APPROVED = "Approved"
     REJECTED = "Rejected"
     PENDING = "Pending"
+    CLOSED = "Closed"
 
 
 class Stage(object):
@@ -225,6 +226,9 @@ class DregData:
 
     def id_list_status_new(self, lookup_id_list=None):
         return self.id_list_by_value_in_col(ColName.STATUS, Status.NEW, lookup_id_list)
+
+    def id_list_status_pending(self, lookup_id_list=None):
+        return self.id_list_by_value_in_col(ColName.STATUS, Status.PENDING, lookup_id_list)
 
     def id_list_status_approved(self, lookup_id_list=None):
         return self.id_list_by_value_in_col(ColName.STATUS, Status.APPROVED, lookup_id_list)

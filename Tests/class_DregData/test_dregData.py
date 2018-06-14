@@ -27,12 +27,12 @@ class TestDregData(TestCase):
 
         init_dd.update(upd_df)
 
-        result_df = init_dd.get_dreg_data()
+        # result_df = init_dd.get_dreg_data()
 
-        writer = pd.ExcelWriter(os.path.join("Tests", "class_DregData", "Data", "update_result_df.xlsx"),
-                                engine='xlsxwriter')
-        result_df.to_excel(writer, index=False)
-        writer.save()
+        # writer = pd.ExcelWriter(os.path.join("Tests", "class_DregData", "Data", "update_result_df.xlsx"),
+        #                        engine='xlsxwriter')
+        # result_df.to_excel(writer, index=False)
+        # writer.save()
 
         self.assertEqual(len(init_dd.id_list_all), 10)
         self.assertEqual(len(init_dd.column_list_all), 23)

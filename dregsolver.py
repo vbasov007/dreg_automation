@@ -21,14 +21,17 @@ class DregSolver:
     def process_all_new(self, dd: DregData):
 
         dreg_id_status_new = dd.id_list_status_new()
+        dreg_id_status_pending = dd.id_list_status_pending()
 
-        print(str(len(dreg_id_status_new)) + " New design registrations")
+        print("{0} NEW design registrations".format(len(dreg_id_status_new)))
+        print("{0} PENDING design registrations".format(len(dreg_id_status_pending)))
 
-        for dreg_id in dreg_id_status_new:
-            print("Processing: " + str(dreg_id) + " ")
+        for dreg_id in (dreg_id_status_new+dreg_id_status_pending):
+            print("Registration {0}: DREG ID: {1}".format(self.count_processed_lines, str(dreg_id)), end='\r')
             self.process_dreg_by_id(dd, dreg_id)
             self.count_processed_lines += 1
-            print("\rDone!")
+
+        print("All done!")
 
     def process_dreg_by_id(self, dd: DregData, dreg_id):
 
