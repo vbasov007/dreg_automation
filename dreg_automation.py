@@ -231,7 +231,11 @@ def main():
 
             core_part_name_df = pd.read_excel( wrk_file(FN.DATA_FOLDER, "coreproduct.xlsx") )
             core_part_name_df = core_part_name_df[['Type', 'Core Product']]
+            core_product_list = core_part_name_df['Core Product'].tolist()
             core_part_name_dict = core_part_name_df.set_index('Type')['Core Product'].to_dict()
+            for cp in core_product_list:
+                if cp not in core_part_name_dict:
+                    core_part_name_dict.update({cp: cp})
 
             synonyms_dict = ccm.get_dict(synonyms_df)
 
@@ -240,6 +244,8 @@ def main():
             solver = DregSolver()
 
             solver.process_all_new(dd)
+
+            solver.process_duplication_check(dd)
 
             writer = DregWriter()
             writer.set_default_rules()

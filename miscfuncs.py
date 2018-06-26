@@ -131,8 +131,10 @@ def get_value_from_dict_by_key(dct, key, return_if_not_found=""):
         n = dct[key]
         return n
     else:
-        return return_if_not_found
-
+        if return_if_not_found == "key":
+            return key
+        else:
+            return ""
 
 def is_nan(num):
     return num != num

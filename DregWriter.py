@@ -6,6 +6,7 @@ import os
 from dregdata import ColName
 from dregdata import Status
 from dregdata import Stage
+from dregdata import Action
 
 
 class DregWriter:
@@ -30,6 +31,7 @@ class DregWriter:
         self.set_row_rule(ColName.STATUS, Status.CLOSED, {'font_color': "#808A87"})
         self.set_row_rule(ColName.PROJ_STAGE, Stage.BW_POS, {'bg_color': "#98F5FF"})
         self.set_row_rule(ColName.PROJ_STAGE, Stage.BW_MANUAL, {'bg_color': "#8EE5EE"})
+        self.set_row_rule(ColName.ACTION, Action.CONFLICT, {'font_color': "#FF0000"})
 
     def save_dreg(self, file_name, dd: DregData):
 

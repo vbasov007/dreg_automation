@@ -28,6 +28,8 @@ class Action(object):
     REJECT = "Reject"
     PENDING = "Pending"
     MANUAL_DECISION = "???"
+    CONFLICT = "!!!Conflict!!!"
+    CHECK_OK = "OK"
 
 
 class Reason(object):
@@ -54,6 +56,7 @@ class ClickerResult(object):
     SUCCESS = "Success"
 
 
+
 class DregData:
 
     class DregDataException(Exception):
@@ -67,14 +70,18 @@ class DregData:
         if not is_dreg_data_format(dreg_df):
             raise DregData.DregDataException("DregData.__init__: DREG table format incorrect!")
 
-        self.dreg_df = dreg_df
+        self.dreg_df = dreg_df.fillna('')
         self.core_cust_names = core_cust_names
 
         self.columns_in_original_order = list(self.dreg_df.columns)
         self.subcon_list = list()
 
-        # make sure that DREG_ID is str and not int or float
+        self.core_part_num = core_part_num
+
+        # make sure that all are str and not int or float
         self.dreg_df[ColName.DREG_ID] = self.dreg_df[ColName.DREG_ID].apply(str)
+        self.dreg_df[ColName.ORIGINAL_CUSTOMER_NAME] = self.dreg_df[ColName.ORIGINAL_CUSTOMER_NAME].apply(str)
+        self.dreg_df[ColName.ORIGINAL_SUBCON_NAME] = self.dreg_df[ColName.ORIGINAL_SUBCON_NAME].apply(str)
 
         if add_working_columns:
             self.if_not_exist_add_column_comments()
@@ -108,9 +115,12 @@ class DregData:
         if not self.is_column_exist(ColName.CORE_PART):
             self.add_left_column(ColName.CORE_PART)
 
-        self.apply_core_values(core_part_num, ColName.ORIGINAL_PART_NAME, ColName.CORE_PART)
+        self.apply_core_values(core_part_num, ColName.ORIGINAL_PART_NAME, ColName.CORE_PART, use_if_not_found="key")
 
         return
+
+    def is_part_in_pricelist(self, part_name):
+        return part_name in self.core_part_num
 
     def renew_column_core_subcon_name(self, core_cust_names: dict):
         if not self.is_column_exist(ColName.CORE_SUBCON_NAME):
@@ -201,19 +211,51 @@ class DregData:
                                              exclude_key_value=True)
 
     def customers_which_use_the_part(self, part_name, lookup_id_list=None, except_customer=None):
-        lst = self.list_of_val_by_key_value(ColName.ORIGINAL_CUSTOMER_NAME, ColName.CORE_PART,
+        lst = self.list_of_val_by_key_value(ColName.CORE_CUST_NAME, ColName.CORE_PART,
                                             part_name, lookup_id_list)
         s = set(lst)
 
-        try:
+        if except_customer in s:
             s.remove(except_customer)
-        except KeyError:
-            pass
+        if '' in s:
+            s.remove('')
 
         return list(s)
 
     def setval(self, dreg_id, col_num, value):
         self.dreg_df.loc[self.dreg_df[ColName.DREG_ID] == dreg_id, col_num] = value
+
+    def id_list_filter(self, lookup_id_list=None, **args):
+
+        if lookup_id_list is None:
+            output = list(self.id_list_all)
+        else:
+            output = list(lookup_id_list)
+
+        if 'core_part' in args:
+            output = self.id_list_by_core_part(args['core_part'], output)
+        if 'status' in args:
+            output = self.id_list_by_status(args["status"], output)
+        if 'core_cust' in args:
+            output = self.id_list_by_core_cust(args["core_cust"], output)
+        if 'core_subcon' in args:
+            if len(args["core_subcon"]) > 0:
+                output = self.id_list_by_core_subcon(args["core_subcon"], output)
+        if 'disti' in args:
+            output = self.id_list_by_distributor(args["disti"], output)
+        if 'orig_part' in args:
+            output = self.id_list_by_orig_part(args["orig_part"], output)
+        if 'exclude_disti' in args:
+            output = self.id_list_exclude_distributor(args["exclude_disti"], output)
+        if 'stage' in args:
+            if args['stage'] == 'BW':
+                output = self.id_list_proj_stage_bw(output)
+
+        if 'exclude_dreg_id' in args:
+            if args['exclude_dreg_id'] in output:
+                output.remove(args['exclude_dreg_id'])
+
+        return output
 
     def id_list_by_core_cust(self, customer_name, lookup_id_list=None):
         return self.id_list_by_value_in_col(ColName.CORE_CUST_NAME, customer_name, lookup_id_list)
@@ -282,6 +324,9 @@ class DregData:
     def get_disti_by_id(self, dreg_id):
         return self.get_value_from_col_by_id(ColName.DISTI_NAME, dreg_id)
 
+    def get_status_by_id(self, dreg_id):
+        return self.get_value_from_col_by_id(ColName.STATUS, dreg_id)
+
     def get_core_customer_by_id(self, dreg_id):
         return self.get_value_from_col_by_id(ColName.CORE_CUST_NAME, dreg_id)
 
@@ -293,6 +338,7 @@ class DregData:
 
     def get_date_by_id(self, dreg_id):
         return self.get_value_from_col_by_id(ColName.REG_DATE, dreg_id)
+
 
     def is_customer_in_subcon_list(self, core_cust_name):
         if core_cust_name in self.subcon_list:
@@ -306,6 +352,12 @@ class DregData:
     def is_action_reject(self, dreg_id):
         return self.get_value_from_col_by_id(ColName.ACTION, dreg_id) == Action.REJECT
 
+    def get_action_value(self, dreg_id):
+        return self.get_value_from_col_by_id(ColName.ACTION, dreg_id)
+
+    def get_reason_value(self, dreg_id):
+        return self.get_value_from_col_by_id(ColName.REJECTION_REASON, dreg_id)
+
     def is_rejection_reason_already_registered_for_other(self, dreg_id):
         return self.get_value_from_col_by_id(ColName.REJECTION_REASON, dreg_id) == Reason.ALREADY_REGISTERED_BY_OTHER
 
@@ -314,6 +366,15 @@ class DregData:
 
     def reject(self, dreg_id):
         self.setval(dreg_id, ColName.ACTION, Action.REJECT)
+
+    def mark_dreg_conflict(self, dreg_id):
+        self.setval(dreg_id, ColName.ACTION, Action.CONFLICT)
+
+    def is_marked_conflict(self, dreg_id):
+        return self.get_value_from_col_by_id(ColName.ACTION, dreg_id) == Action.CONFLICT
+
+    def mark_conflict_check_ok(self, dreg_id):
+        self.setval(dreg_id, ColName.ACTION, Action.CHECK_OK)
 
     def ask_for_manual_decision(self, dreg_id):
         self.setval(dreg_id, ColName.ACTION, Action.MANUAL_DECISION)
@@ -350,12 +411,12 @@ class DregData:
     def is_column_exist(self, column_name):
         return is_column_exist_in_df(self.dreg_df, column_name)
 
-    def apply_core_values(self, replacing_dict: dict, source_col_name: str, destination_col_name: str):
+    def apply_core_values(self, replacing_dict: dict, source_col_name: str, destination_col_name: str, use_if_not_found=''):
 
         assert replacing_dict  # assert dict != None
 
         self.dreg_df[destination_col_name] = self.dreg_df[source_col_name].apply(
-            lambda key: get_value_from_dict_by_key(replacing_dict, key))
+            lambda key: get_value_from_dict_by_key(replacing_dict, key, return_if_not_found=use_if_not_found))
 
     def get_dreg_data(self):
         self.dreg_df = self.dreg_df[self.columns_in_original_order]
