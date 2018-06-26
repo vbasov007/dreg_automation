@@ -29,7 +29,7 @@ class TestDregSolver(TestCase):
 
         # Case 1: reject new if already exist for other disti
         dreg_id = '20412507'
-        solver.process_dreg_by_id1(dd, dreg_id)
+        solver.process_dreg_by_id(dd, dreg_id)
         res = dd.get_action_value(dreg_id)
         reason = dd.get_reason_value(dreg_id)
         self.assertEqual(res, Action.REJECT, "New reg, Same part, same customer, diff disti => Reject")
@@ -37,7 +37,7 @@ class TestDregSolver(TestCase):
 
         # Case 2: conflict of existing registrations
         dreg_id = '20246272'
-        solver.process_dreg_by_id1(dd, dreg_id)
+        solver.process_dreg_by_id(dd, dreg_id)
         res = dd.get_action_value(dreg_id)
         self.assertEqual(res, Action.CONFLICT, "Approved regs, Same part, same customer, diff disti => Conflict")
         res = dd.get_action_value('20340467')
@@ -45,7 +45,7 @@ class TestDregSolver(TestCase):
 
         # Case 3: conflict in subcontructors
         dreg_id = '20244170'
-        solver.process_dreg_by_id1(dd, dreg_id)
+        solver.process_dreg_by_id(dd, dreg_id)
         res = dd.get_action_value(dreg_id)
         self.assertEqual(res, Action.CONFLICT, "Same Subcon 1  => Conflict")
         res = dd.get_action_value('20259923')
@@ -53,7 +53,7 @@ class TestDregSolver(TestCase):
 
         # Case 4: conflict with BW
         dreg_id = '20208347'
-        solver.process_dreg_by_id1(dd, dreg_id)
+        solver.process_dreg_by_id(dd, dreg_id)
         res = dd.get_action_value(dreg_id)
         self.assertEqual(res, Action.CONFLICT, "Same Subcon 1  => Conflict")
         res = dd.get_action_value('20025746')
@@ -61,17 +61,17 @@ class TestDregSolver(TestCase):
 
         # Case 5: New from other customer too
         dreg_id = '20412524'
-        solver.process_dreg_by_id1(dd, dreg_id)
+        solver.process_dreg_by_id(dd, dreg_id)
         res = dd.get_action_value(dreg_id)
         self.assertEqual(res, Action.MANUAL_DECISION, "New from other  => Manual Decision")
 
         dreg_id = '20412557'
-        solver.process_dreg_by_id1(dd, dreg_id)
+        solver.process_dreg_by_id(dd, dreg_id)
         res = dd.get_action_value(dreg_id)
         self.assertEqual(res, Action.APPROVE, "Approve")
 
         dreg_id = '20081364'
-        solver.process_dreg_by_id1(dd, dreg_id)
+        solver.process_dreg_by_id(dd, dreg_id)
         res = dd.get_action_value(dreg_id)
         self.assertEqual(res, Action.CHECK_OK, "Check Ok")
 
