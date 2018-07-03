@@ -1,10 +1,17 @@
 
+
+class Loc(object):
+    click_Sales_Center = ('click at', 'css', '''li.th-menu2-sub-item.th-menu2-sub-item-hov > div.th-menu2-arrow''')
+    click_Design_Registrations = ('click at', 'id', '''C4_W16_V17_HT-DR-SR''')
+
+
 class XP(object):
 
     class PageHome:
         header = '''Home'''
         but_Sales_Center = '''//ul[@id='C4_W16_V17_mainmenu']/li[6]/div'''
         but_Design_Registration = '''//ul[@id='C4_W16_V17_mainmenu']/li[6]/ul/li/a'''
+
 
     class PageSearchDesignRegistrations:
 

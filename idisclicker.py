@@ -6,6 +6,7 @@ import threading
 import time
 import pandas as pd
 from XP import XP
+from XP import Loc
 
 
 def thread_sleep(time_sec):
@@ -43,6 +44,9 @@ class IdisClicker:
             thread_sleep(time_sec)
         else:
             time.sleep(1)
+
+    def execute_command(self, locator: Loc, timeout_sec=10, **kwargs):
+        pass
 
     def do(self, what: str, how: By, path: str, key_send_str='', timeout_sec=30):
 
@@ -103,9 +107,9 @@ class IdisClicker:
         if browser_type == 'firefox':
             try:
                 profile = webdriver.FirefoxProfile(
-                    'C:/Users/basov/AppData/Roaming/Mozilla/Firefox/Profiles/lp0bkmjj.default')
+                    r'C:\Users\basov\AppData\Roaming\Mozilla\Firefox\Profiles\6ti8l5bx.default')
                 self.driver = webdriver.Firefox(firefox_profile=profile,
-                                                executable_path=r'C:\Users\basov\Downloads\geckodriver.exe')
+                                                executable_path=r'C:\Firefox\geckodriver.exe')
 
                 self.driver.get("https://portal.intra.infineon.com/irj/portal")
 
@@ -116,7 +120,7 @@ class IdisClicker:
                 self.driver.find_element_by_id("logonuidfield").clear()
                 self.driver.find_element_by_id("logonuidfield").send_keys("basov")
                 self.driver.find_element_by_id("logonpassfield").clear()
-                self.driver.find_element_by_id("logonpassfield").send_keys("rise#42(Answer)%")
+                self.driver.find_element_by_id("logonpassfield").send_keys("Planet%Mars%Flight")
                 self.driver.find_element_by_name("uidPasswordLogon").click()
 
                 self.wait_element(By.ID, "urFrames", timeout_sec=30)
@@ -220,6 +224,21 @@ class IdisClicker:
                 self.sleep(1)
 
         return False
+
+    def wait_and_click_element_by_id(self, id):
+
+        self.wait_element(By.ID, id)
+
+        for i in range(10):
+            try:
+                self.driver.find_element_by_id(id).click()
+                return True
+            except ElementNotInteractableException:
+                self.sleep(1)
+
+        return False
+
+
 
     def wait_and_clear_element_by_xpath(self, xpath):
 

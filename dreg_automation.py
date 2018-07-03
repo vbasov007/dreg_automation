@@ -61,10 +61,6 @@ def run_idis_clicker(dd: DregData, dreg_ids_with_action: list):
 
     ic = IdisClicker()
 
-    dreg_df = pd.read_excel(wrk_file(FN.DATA_FOLDER, "dreg_analysis.xlsx"))
-
-    dd = DregData(dreg_df)
-
     restart_browser = True
     for dreg_id in dreg_ids_with_action:
 
@@ -260,7 +256,7 @@ def main():
         elif answer == "4":
 
             dreg_df = pd.read_excel( wrk_file(FN.DATA_FOLDER,'dreg_analysis.xlsx') )
-            dd = DregData(dreg_df)
+            dd = DregData(dreg_df, add_working_columns=False)
             dreg_ids_with_action = dd.id_list_action_not_empty
             run_idis_clicker(dd, dreg_ids_with_action)
 
