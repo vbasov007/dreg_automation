@@ -4,6 +4,10 @@ from miscfuncs import remove_duplicates_and_empty_items
 from miscfuncs import is_nan
 from miscfuncs import string2datatime
 
+from idis_menu_items import ReasonForRejection
+from idis_menu_items import RegistrationStatus
+
+
 
 class ColName(object):
     REJECTION_REASON = "Rejection Reason"
@@ -21,29 +25,30 @@ class ColName(object):
     PROJ_STAGE = "Project Stage"
     REG_DATE = "Registration Date"
     CLICKER_MESSAGE = "Clicker"
+    CATEGORY = "Design Registration Category"
 
 
 class Action(object):
-    APPROVE = "Approve"
-    REJECT = "Reject"
-    PENDING = "Pending"
+    APPROVE = RegistrationStatus.Approved  # must be the same as in class Status
+    REJECT = RegistrationStatus.Rejected  # must be the same as in class Status
+    PENDING = RegistrationStatus.Pending
     MANUAL_DECISION = "???"
     CONFLICT = "!!!Conflict!!!"
     CHECK_OK = "OK"
 
 
 class Reason(object):
-    ALREADY_REGISTERED_BY_OTHER = "Already registered by other disti"
-    OPEN_FOR_ALL = "Open for all"
-    DUPLICATED = "Duplicated"
+    ALREADY_REGISTERED_BY_OTHER = ReasonForRejection.Already_registered_to_another_disti
+    OPEN_FOR_ALL = ReasonForRejection.Open_for_all
+    DUPLICATED = ReasonForRejection.Duplicate_Registration
 
 
 class Status(object):
-    NEW = "New"
-    APPROVED = "Approved"
-    REJECTED = "Rejected"
-    PENDING = "Pending"
-    CLOSED = "Closed"
+    NEW = RegistrationStatus.New
+    APPROVED = RegistrationStatus.Approved
+    REJECTED = RegistrationStatus.Rejected
+    PENDING = RegistrationStatus.Pending
+    CLOSED = RegistrationStatus.Closed
 
 
 class Stage(object):
@@ -338,6 +343,9 @@ class DregData:
 
     def get_date_by_id(self, dreg_id):
         return self.get_value_from_col_by_id(ColName.REG_DATE, dreg_id)
+
+    def get_category_by_id(self, dreg_id):
+        return self.get_value_from_col_by_id(ColName.CATEGORY, dreg_id)
 
 
     def is_customer_in_subcon_list(self, core_cust_name):

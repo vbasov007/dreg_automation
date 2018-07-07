@@ -1,10 +1,17 @@
 from execute_selenium import WebClicker, ClickerException
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import WebDriverException
 
+from mylogger import mylog
+
+class IdisWebControllerException(Exception):
+    pass
 
 class IdisWebController:
 
     def __init__(self, portal_url, idis_url, login, password, browser, browser_binary, profile_path, driver_exe_path):
+
+        mylog.debug("Start IdisWebController")
 
         self.portal_url = portal_url
         self.idis_url = idis_url
@@ -15,26 +22,51 @@ class IdisWebController:
         self.profile_path = profile_path
         self.driver_exe_path = driver_exe_path
 
+        self.first_run = True
+
         self.wc = WebClicker(self.driver_exe_path, browser=self.browser, profile_path=self.profile_path,
                              browser_binary=self.browser_binary)
 
     def update_dreg(self, dreg_id, status, reason, approver, category):
 
-        self._open_portal_in_new_window()
-        self._open_idis()
-        self._open_dreg_search()
-        self._open_dreg(dreg_id)
-        
-        if self._is_dreg_blocked_by_other_user():
-            print("#{0} blocked by other user. Can't edit".format(dreg_id))
+        mylog.info("Updating dreg id = {0}".format(dreg_id))
+        mylog.info("New status='{0}'; Reason='{1}'; Approver='{2}'; Category='{3}'".format(status, reason,
+                                                                                             approver, category))
+
+        try:
+            if self.first_run:
+                self._open_portal_in_new_window()
+                self._open_idis()
+                self._open_dreg_search()
+                self.first_run = False
+
+            self._open_dreg(dreg_id)
+
+            self._activate_dreg_edit()
+
+            dreg_blocked_message = self._read_dreg_blocked_by_other_user()
+            if dreg_blocked_message:
+                mylog.info("{0}".format(dreg_blocked_message))
+                self._click_backbutton()
+                return False
+
+            self._edit_open_dreg(status, reason, approver, category)
+
+            self._save_dreg()
+
             self._click_backbutton()
+        except (IdisWebControllerException, WebDriverException) as e:
+            self._click_backbutton()
+            mylog.exception(e)
+            self.shutdown_browser()
             return False
 
-        self._edit_open_dreg(status, reason, approver, category)
+        return True
 
-        self._save_dreg()
-
-        self._click_backbutton()
+    def shutdown_browser(self):
+        mylog.debug("Browser shutdown")
+        self.first_run = True
+        self.wc.shutdown()
 
     def _open_portal_in_new_window(self):
         """
@@ -49,14 +81,21 @@ class IdisWebController:
 
         :return: True if success, else False
         """
-        self.wc.get_website(self.portal_url)
+
+        mylog.debug("Opening portal in new window and entering login/password...")
+        success = self.wc.get_website(self.portal_url)
+        if not success:
+            raise IdisWebControllerException("Can't open portal '{0}'".format(self.portal_url))
         self.wc.wait_element('id', 'logonuidfield', time_sec=10)
         self.wc.click('id', 'logonuidfield')
         self.wc.send_string('id', 'logonuidfield', string=self.login)
         self.wc.click('id', 'logonpassfield')
         self.wc.send_string('id', 'logonpassfield', string=self.password, end=Keys.RETURN)
 
-        return self.wc.wait_element('xpath', r"//*[contains(text(),'PC1 CRM Web Client')]", time_sec=10)
+        success = self.wc.wait_element('xpath', r"//*[contains(text(),'PC1 CRM Web Client')]", time_sec=20)
+
+        if not success:
+            raise IdisWebControllerException("Can't see 'PC1 CRM Web Client' link on the resulting page")
 
 
     def _open_idis(self):
@@ -65,17 +104,13 @@ class IdisWebController:
 
         :return: True if success, else False
         """
+        mylog.debug("Open IDIS website url ='{0}'".format(self.idis_url))
         self.wc.get_website(self.idis_url)
-        return self._wait_idis_start_page(time_sec=10)
 
+        success = self.wc.wait_element('xpath', r"//*[contains(text(),'Home - [SAP]')]", time_sec=10)
 
-    def _wait_idis_start_page(self, time_sec=10):
-        """
-        find_element xpath="//*[contains(text(),'Home - [SAP]')]"
-        :param time_sec:
-        :return: True if success, else False
-        """
-        return bool(self.wc.wait_element('xpath', r"//*[contains(text(),'Home - [SAP]')]", time_sec=10))
+        if not success:
+            raise IdisWebControllerException("Can't see 'Home - [SAP]' link on the resulting page.")
 
 
     def _open_dreg_search(self):
@@ -89,23 +124,23 @@ class IdisWebController:
         click id="C19_W49_V50_HT-DR-SR"
         :return: True if success, else False
         """
+
+        mylog.debug("Open DREG search page...")
+        self.wc.wait(10)
         self.wc.switch_to_frame_by_index(0)
         self.wc.switch_to_frame_by_index(1)
         self.wc.wait_element('xpath', r"//*[contains(text(),'Sales Center')]", time_sec=5)
-        self.wc.click('xpath', r"//*[contains(text(),'Sales Center')]")
-        self.wc.switch_to_frame_by_index(0)
-        self.wc.switch_to_frame_by_index(1)
+        self.wc.click('xpath', r"//*[contains(text(),'Sales Center')]", time_sec=5)
         self.wc.wait_element('id', r"C19_W49_V50_HT-DR-SR", time_sec=5)
-        self.wc.click('id', r"C19_W49_V50_HT-DR-SR")
+        self.wc.click('id', r"C19_W49_V50_HT-DR-SR", time_sec=5)
 
-        return self._wait_dreg_search_page()
+        success = self.wc.wait_element('xpath', r"//*[contains(text(),'Search: Design Registrations - [SAP]')]",
+                                       time_sec=5)
 
-    def _wait_dreg_search_page(self):
-        """
-        wait_element xpath="//*[contains(text(),'Search: Design Registrations - [SAP]')]" time=10
-        :return:
-        """
-        return self.wc.wait_element('xpath', r"//*[contains(text(),'Search: Design Registrations - [SAP]')]", time_sec=5)
+        if not success:
+            raise IdisWebControllerException("Can't see 'Search: Design Registrations - [SAP]' "
+                                             "link on the resulting page.")
+
 
     def _open_dreg(self, dreg_id):
         """
@@ -123,37 +158,42 @@ class IdisWebController:
         :param dreg_id:
         :return:
         """
+        mylog.debug("Open design registration id = {0} details page...".format(dreg_id))
         self.wc.wait_element('id', r"C22_W66_V67_V68_btqopp_parameters[1].FIELD", time_sec=5)
         self.wc.click('id', r"C22_W66_V67_V68_btqopp_parameters[1].FIELD")
         self.wc.wait_element('link_text', r'Design Registration ID')
         self.wc.click('link_text', r'Design Registration ID')
         self.wc.wait(time_sec=2)
+        self.wc.clear('id', r"C22_W66_V67_V68_btqopp_parameters[1].VALUE1")
         self.wc.send_string('id', r"C22_W66_V67_V68_btqopp_parameters[1].VALUE1", string=str(dreg_id), end=Keys.RETURN)
-        self.wc.wait_element('link_test', str(dreg_id), time_sec=10)
-        self.wc.wait_element('link_test', str(dreg_id))
+        self.wc.wait_element('link_text', str(dreg_id), time_sec=10)
+        self.wc.click('link_text', str(dreg_id))
 
-        return self._is_dreg_page()
+        success = self.wc.wait_element('xpath', r"//*[contains(text(),'Design Registration Details')]", time_sec=10)
 
-    def _is_dreg_page(self):
-        """
-        find_element(xpath, //*[contains(text(),'Design Registration Details')])
-        :return:
-        """
-        return bool(self.wc.wait_element('xpath', r"//*[contains(text(),'Design Registration Details')]", time_sec=10))
+        if not success:
+            raise IdisWebControllerException("Can't see 'Design Registration Details' on the page")
 
-    def _is_dreg_blocked_by_other_user(self):
+    def _read_dreg_blocked_by_other_user(self):
         """
         find_elements xpath="//*[contains(text(),'is being processed')]"
         :return:
         """
-        return not bool(self.wc.find_element('xpath', r"//*[contains(text(),'is being processed')]"))
+        message = None
+
+        element = self.wc.find_element('xpath', r"//*[contains(text(),'is being processed')]")
+        if element:
+            message = element.get_attribute('title')
+
+        return message
+
 
     def _edit_open_dreg(self, status, reason, approver, category):
 
-        self._activate_dreg_edit()
+        mylog.debug("Start edit current dreg")
 
         self._edit_registration_status(status)
-        if status == 'Reject':
+        if status == 'Rejected':
             self._edit_rejection_reason(reason)
         self._edit_dreg_approver(approver)
         self._edit_dreg_category(category)
@@ -164,6 +204,7 @@ class IdisWebController:
         wait time=5
         :return:
         """
+        mylog.debug("Press Edit button")
         self.wc.click('xpath', r"//img[@title='Edit Page']")
         self.wc.wait(time_sec=5)
 
@@ -176,20 +217,25 @@ class IdisWebController:
         :param status:
         :return:
         """
-        self.wc.click('id', r"C24_W74_V76_V80_btstatus_struct.act_status-btn")
-        self.wc.wait_element('link_text', status, time_sec=3)
-        self.wc.click('link_text', status)
+        mylog.debug("Edit registration status")
 
-    def _edit_rejection_reason(self, status):
+        if(not self.wc.drop_down('id', r"C24_W74_V76_V80_btstatus_struct.act_status-btn", status,
+                                 time_sec=5, repeat_if_fail=3)):
+            raise IdisWebControllerException("Can't change on '{0}' in Registration Status".format(status))
+
+
+    def _edit_rejection_reason(self, reason):
         """
         click id='C24_W74_V76_V80_btsubject_struct.conc_key-btn'
         click link_text="Already registered to another disti"
         :param status:
         :return:
         """
-        self.wc.click('id', r'C24_W74_V76_V80_btsubject_struct.conc_key-btn')
-        self.wc.wait_element('link_text', status, time_sec=3)
-        self.wc.click('link_text', status)
+        mylog.debug("Edit rejection reason")
+
+        if (not self.wc.drop_down('id', r'C24_W74_V76_V80_btsubject_struct.conc_key-btn', reason,
+                                  time_sec=5, repeat_if_fail=3)):
+            raise IdisWebControllerException("Can't change on '{0}' in Rejection Reason".format(reason))
 
     def _edit_dreg_approver(self, approver):
         """
@@ -198,9 +244,14 @@ class IdisWebController:
         :param approver:
         :return:
         """
+        mylog.debug("Edit DREG approver: '{0}'".format(approver))
         self.wc.clear('id', r"C24_W74_V76_V80_btparterapprover_struct.partner_no")
         self.wc.send_string('id', r"C24_W74_V76_V80_btparterapprover_struct.partner_no", string=approver, end=Keys.RETURN)
+        self.wc.wait(1)
+        check = self.wc.get_attribute('id', r"C24_W74_V76_V80_btparterapprover_struct.partner_no",attribute_name='value')
 
+        if not check == approver:
+            raise IdisWebControllerException("Read approver fail!")
 
     def _edit_dreg_category(self, category):
         """
@@ -209,11 +260,14 @@ class IdisWebController:
         :param category:
         :return:
         """
-        self.wc.click('id', r"C24_W74_V76_V80_btcustomerh_ext.zzqp_dmnd_flg")
-        self.wc.wait_element('link_text', category)
-        self.wc.click('link_text', category)
+        mylog.debug("Edit dreg category: '{0}'".format(category))
+
+        if (not self.wc.drop_down('id', r"C24_W74_V76_V80_btcustomerh_ext.zzqp_dmnd_flg", category,
+                                  time_sec=5, repeat_if_fail=3)):
+            raise IdisWebControllerException("Can't change on '{0}' in Category".format(category))
 
     def _click_backbutton(self):
+        mylog.debug("Click Back")
         self.wc.click('id', 'BackButton')
         self.wc.wait(time_sec=10)
 
@@ -225,6 +279,7 @@ class IdisWebController:
         :return:
         """
 
-        self.wc.send_ctrl_key('tag', 'body', 's')
+        mylog.debug("Pressing save button...")
+        self.wc.click('xpath', '//*[@title="Save (Ctrl+S)" and @alt="Save"]', time_sec=10)
         self.wc.wait(time_sec=10)
 

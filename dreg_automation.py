@@ -1,3 +1,5 @@
+from mylogger import mylog
+
 import pandas as pd
 import os
 import corecustomername as ccm
@@ -16,6 +18,10 @@ from idisclicker import IdisClicker
 from DregWriter import DregWriter
 
 import os.path
+
+from idis_website_controller import IdisWebController
+
+from configurator import get_config
 
 class FN(object):
     DATA_FOLDER = "datafiles"
@@ -98,6 +104,44 @@ def run_idis_clicker(dd: DregData, dreg_ids_with_action: list):
     return
 
 
+def update_idis(dd: DregData, dreg_id_list: list, config: dict):
+
+    idis = IdisWebController(portal_url=config['portal_url'],
+                             idis_url=config['idis_url'],
+                             login=config['login'],
+                             password=config['password'],
+                             browser=config['browser'],
+                             browser_binary=config['browser_binary'],
+                             profile_path=config['profile_path'],
+                             driver_exe_path=config['driver_exe_path'])
+
+    for dreg_id in dreg_id_list:
+
+        mylog.info("Start update: Dreg ID = {0}".format(dreg_id))
+
+        new_status = dd.get_action_value(dreg_id)
+
+        if new_status != 'Approved' and new_status != 'Rejected':
+            mylog.info("New Status = {0} - Skipping the DREG".format(new_status))
+            continue
+
+        reason = dd.get_reason_value(dreg_id)
+
+        approver = 'Vasily Basov'
+
+        category = dd.get_category_by_id(dreg_id)
+        if category == '':
+            category = 'Demand Creation'
+
+        res = idis.update_dreg(dreg_id, new_status, reason, approver, category)
+        dd.set_idis_result(dreg_id, res)
+
+        mylog.info("{0} finished with result: {1}".format(dreg_id, res))
+
+
+
+
+
 class Modes(object):
     DREG_FILE = "dreg_file"
     ALIAS_FILE = "alias_file"
@@ -151,7 +195,7 @@ def print_file_info(file_path: str, mode = ''):
 
 def main():
 
-    while True:
+   while True:
 
         print("0 - Show working files info")
         print("1 - Make ''look like'' file")
@@ -160,6 +204,7 @@ def main():
         print("4 - Run Clicker")
         print("5 - Run clicker for failed lines")
         print("6 - Update dreg file")
+        print("7 - update one DREG")
 
         answer = input("->")
 
@@ -255,10 +300,25 @@ def main():
 
         elif answer == "4":
 
+            mylog.info('Starting update IDIS...')
+
+            mylog.debug("Reading 'dreg_analysis.xlsx' file")
             dreg_df = pd.read_excel( wrk_file(FN.DATA_FOLDER,'dreg_analysis.xlsx') )
+
+            mylog.debug("Init DregData database...")
             dd = DregData(dreg_df, add_working_columns=False)
+
             dreg_ids_with_action = dd.id_list_action_not_empty
-            run_idis_clicker(dd, dreg_ids_with_action)
+
+            #dreg_ids_with_action = ['20408789']
+            mylog.debug("Staring IDIS update with {0} registrations...".format(len(dreg_ids_with_action)))
+            update_idis(dd, dreg_ids_with_action, get_config('idis'))
+
+            output_file_name = wrk_file(FN.DATA_FOLDER, "last_clicker_result.xlsx", is_timestamp=True)
+            writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
+            dreg_df.to_excel(writer, index=False)
+            writer.save()
+            # run_idis_clicker(dd, dreg_ids_with_action)
 
         elif answer == "5":
             dreg_df = pd.read_excel( wrk_file(FN.DATA_FOLDER,'dreg_analysis.xlsx') )
@@ -295,9 +355,24 @@ def main():
                 print("Done!")
 
                 print_file_info(p_old_file, mode=Modes.DREG_FILE)
+        elif answer == "7":
+            mylog.info('Starting update one DREG...')
+            dreg_id = str(input("DREG ID:"))
+
+            mylog.debug("Reading 'dreg_analysis.xlsx' file")
+            dreg_df = pd.read_excel(wrk_file(FN.DATA_FOLDER, 'dreg_analysis.xlsx'))
+
+            mylog.debug("Init DregData database...")
+            dd = DregData(dreg_df, add_working_columns=False)
+
+            dreg_ids_with_action = [dreg_id]
+            mylog.debug("Staring IDIS update with {0} registrations...".format(len(dreg_ids_with_action)))
+            update_idis(dd, dreg_ids_with_action, get_config('idis'))
 
         elif answer == "q":
             break
 
+
 if __name__ == "__main__":
+
     main()
